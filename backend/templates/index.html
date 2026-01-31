@@ -18,33 +18,41 @@
             text-align: center;
             margin-bottom: 40px;
         }
+        .login-btn {
+            display: block;
+            margin: 50px auto;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>🏃‍♂️ For the Kudos 🏃‍♀️</h1>
 
-        <div class="card text-center shadow">
-            <h2>Total Activities</h2>
-            <p class="display-5">{{ stats.total_activities }}</p>
-        </div>
+        {% if stats %}
+            <div class="card text-center shadow">
+                <h2>Total Activities</h2>
+                <p class="display-5">{{ stats.total_activities }}</p>
+            </div>
 
-        <div class="card text-center shadow">
-            <h2>Total Kudos</h2>
-            <p class="display-5">{{ stats.total_kudos }}</p>
-        </div>
+            <div class="card text-center shadow">
+                <h2>Total Kudos</h2>
+                <p class="display-5">{{ stats.total_kudos }}</p>
+            </div>
 
-        <div class="card text-center shadow">
-            <h2>Average Kudos per Activity</h2>
-            <p class="display-5">{{ stats.average_kudos }}</p>
-        </div>
+            <div class="card text-center shadow">
+                <h2>Average Kudos per Activity</h2>
+                <p class="display-5">{{ stats.average_kudos }}</p>
+            </div>
 
-        <div class="card text-center shadow">
-            <h2>Most Loved Activity</h2>
-            <p class="h4">{{ stats.most_loved_activity.name }}</p>
-            <p>Kudos: {{ stats.most_loved_activity.kudos }}</p>
-            <p>Distance: {{ stats.most_loved_activity.distance_km }} km</p>
-        </div>
+            <div class="card text-center shadow">
+                <h2>Most Loved Activity</h2>
+                <p class="h4">{{ stats.most_loved_activity.name }}</p>
+                <p>Kudos: {{ stats.most_loved_activity.kudos }}</p>
+                <p>Distance: {{ stats.most_loved_activity.distance_km }} km</p>
+            </div>
+        {% else %}
+            <a href="/login" class="btn btn-primary btn-lg login-btn">Login with Strava to see your stats</a>
+        {% endif %}
     </div>
 </body>
 </html>

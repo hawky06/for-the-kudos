@@ -52,7 +52,7 @@ def kudos_stats(activities):
 # ----------------------------
 @app.get("/")
 def home(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+    return templates.TemplateResponse("index.html", {"request": request, "stats": None})
 
 
 @app.get("/login")
