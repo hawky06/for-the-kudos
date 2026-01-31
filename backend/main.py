@@ -1,30 +1,32 @@
-from fastapi import FastAPI
-from fastapi.responses import RedirectResponse
-import requests
-import os
-from dotenv import load_dotenv
-
+from fastapi import FastAPI, Request
 from fastapi.templating import Jinja2Templates
-from fastapi import Request
-
-
+from fastapi.responses import RedirectResponse
+import os, requests
+from dotenv import load_dotenv
 
 load_dotenv()
 
 app = FastAPI()
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
+
 CLIENT_ID = os.getenv("STRAVA_CLIENT_ID")
 CLIENT_SECRET = os.getenv("STRAVA_CLIENT_SECRET")
 REDIRECT_URI = "https://for-the-kudos.onrender.com/callback"
 
-
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
-
-
 @app.get("/")
 def home(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+    return templates.TemplateResponse("index.html", {"request": request, "stats": {
+        "total_activities": 50,
+        "total_kudos": 979,
+        "average_kudos": 19.6,
+        "most_loved_activity": {
+            "name": "Social run",
+            "kudos": 27,
+            "distance_km": 7.65
+        }
+    }})
 
 
 @app.get("/login")
