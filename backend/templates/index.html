@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>For the Kudos</title>
+</head>
+<body>
+    <h1>Welcome to For the Kudos!</h1>
+    <a href="/login">Connect your Strava account</a>
+    <div id="stats"></div>
+
+    <script>
+        // This will run after login, if you redirect to /callback
+        async function loadStats() {
+            const response = await fetch('/callback'); // might need token
+            const data = await response.json();
+            const div = document.getElementById('stats');
+            div.innerHTML = `
+                <h2>Your Kudos Stats:</h2>
+                <p>Total activities: ${data.total_activities}</p>
+                <p>Total kudos: ${data.total_kudos}</p>
+                <p>Average kudos per activity: ${data.average_kudos}</p>
+                <p>Most loved activity: ${data.most_loved_activity.name} (${data.most_loved_activity.kudos} kudos, ${data.most_loved_activity.distance_km} km)</p>
+            `;
+        }
+
+        loadStats();
+    </script>
+</body>
+</html>
