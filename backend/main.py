@@ -18,31 +18,27 @@ REDIRECT_URI = "https://for-the-kudos.onrender.com/callback"
 # ----------------------------
 # Helper functions
 # ----------------------------
-def get_activities(access_token):
+def get_all_activities(access_token, per_page=50):
     headers = {"Authorization": f"Bearer {access_token}"}
-    response = requests.get(
-        "https://www.strava.com/api/v3/athlete/activities",
-        headers=headers,
-        params={"per_page": 50}
-    )
-    
-    try:
+    activities = []
+    page = 1
+
+    while True:
+        response = requests.get(
+            "https://www.strava.com/api/v3/athlete/activities",
+            headers=headers,
+            params={"per_page": per_page, "page": page}
+        )
         data = response.json()
-    except ValueError:
-        print("Error parsing JSON:", response.text)
-        return []
 
-    # Check if Strava returned an error
-    if isinstance(data, dict) and data.get("message"):
-        print("Strava API error:", data)
-        return []
+        # Stop if no more activities or error
+        if not data or isinstance(data, dict) and data.get("message"):
+            break
 
-    # Make sure it's a list
-    if not isinstance(data, list):
-        print("Unexpected response from Strava:", data)
-        return []
+        activities.extend(data)
+        page += 1
 
-    return data
+    return activities
 
 
 def kudos_stats(activities):
