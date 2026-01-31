@@ -25,7 +25,14 @@ def get_activities(access_token):
         headers=headers,
         params={"per_page": 50}
     )
-    return response.json()
+    data = response.json()
+    
+    # If it's a dict with errors, return empty list
+    if isinstance(data, dict):
+        print("Activities response:", data)
+        return []
+    
+    return data
 
 
 def kudos_stats(activities):
@@ -83,9 +90,30 @@ def callback(request: Request, code: str):
     token_json = token_response.json()
     access_token = token_json.get("access_token")
 
-    # Fetch activities and calculate stats
+    if not access_token:
+        # If something went wrong, show a friendly error
+        return templates.TemplateResponse(
+            "index.html",
+            {
+                "request": request,
+                "stats": None,
+                "error": "Could not get access token. Please try logging in again."
+            }
+        )
+
+    # Fetch activities
     activities = get_activities(access_token)
+
+    # Make sure we got a list
+    if not isinstance(activities, list):
+        print("Strava returned unexpected data:", activities)
+        activities = []
+
+    # Calculate stats
     stats = kudos_stats(activities)
 
-    # Render template with real stats
-    return templates.TemplateResponse("index.html", {"request": request, "stats": stats})
+    # Render template with stats
+    return templates.TemplateResponse(
+        "index.html",
+        {"request": request, "stats": stats}
+    )
