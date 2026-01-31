@@ -18,7 +18,7 @@ REDIRECT_URI = "https://for-the-kudos.onrender.com/callback"
 # ----------------------------
 # Helper functions
 # ----------------------------
-def get_all_activities(access_token, per_page=50):
+def get_activities(access_token, per_page=50):
     headers = {"Authorization": f"Bearer {access_token}"}
     activities = []
     page = 1
