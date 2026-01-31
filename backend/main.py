@@ -25,13 +25,23 @@ def get_activities(access_token):
         headers=headers,
         params={"per_page": 50}
     )
-    data = response.json()
     
-    # If it's a dict with errors, return empty list
-    if isinstance(data, dict):
-        print("Activities response:", data)
+    try:
+        data = response.json()
+    except ValueError:
+        print("Error parsing JSON:", response.text)
         return []
-    
+
+    # Check if Strava returned an error
+    if isinstance(data, dict) and data.get("message"):
+        print("Strava API error:", data)
+        return []
+
+    # Make sure it's a list
+    if not isinstance(data, list):
+        print("Unexpected response from Strava:", data)
+        return []
+
     return data
 
 
@@ -89,6 +99,8 @@ def callback(request: Request, code: str):
     )
     token_json = token_response.json()
     access_token = token_json.get("access_token")
+
+    print("Token response:", token_json)
 
     if not access_token:
         # If something went wrong, show a friendly error
