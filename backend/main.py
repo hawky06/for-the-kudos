@@ -59,8 +59,8 @@ def kudos_stats(activities, access_token):
             "name": most_loved["name"],
             "kudos": most_loved["kudos_count"],
             "distance_km": round(most_loved["distance"] / 1000, 2),
-            "date": datetime.fromisoformat(most_loved["start_date"].replace("Z", "")).strftime("%d-%b-%Y"),
-            "polyline": most_loved["map"]["polyline"]
+            "date": most_loved["start_date_local"][:10],
+            "polyline": full_activity["map"]["polyline"]
         }
     }
 
