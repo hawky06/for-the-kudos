@@ -219,3 +219,11 @@ def top_activity(request: Request):
         "date": activity["start_date_local"][:10],
         "polyline": activity["map"]["summary_polyline"]
     }
+
+
+@app.get("/health/db")
+def db_health():
+    db = SessionLocal()
+    db.execute("SELECT 1")
+    db.close()
+    return {"db": "ok"}

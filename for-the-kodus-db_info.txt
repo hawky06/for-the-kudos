@@ -1,0 +1,111 @@
+General
+Name
+A unique name for your database.
+for-the-kudos-db
+
+Created
+11 minutes ago
+
+Status
+available
+
+PostgreSQL Version
+18
+
+Region
+Frankfurt (EU Central)
+
+Read Replicas
+
+Add Read Replica
+Storage
+Fetching storage metrics
+Storage Autoscaling
+Disabled
+Datadog API Key
+
+Add Datadog API Key
+Postgres Instance
+Instance Type
+Free
+256 MB
+ RAM
+0.1
+ CPU
+1 GB
+ Storage
+Update
+A credit card is required to change instance types.
+Add payment information
+High Availability
+Run a standby instance of your database and automatically fail over to it if the primary encounters an issue.
+
+
+Disabled
+Only available for Pro instances and higher.
+See upgrade options
+
+
+Connections
+Hostname
+An internal hostname used by your Render services.
+dpg-d5voaiu3jp1c73ccecqg-a
+
+Port
+5432
+
+Database
+for_the_kudos_db
+
+Username
+for_the_kudos_db_user
+
+Password
+wE1WnHdljqOtcQCEk4RTsTJxwxfddmB5
+
+
+Internal Database URL
+postgresql://for_the_kudos_db_user:wE1WnHdljqOtcQCEk4RTsTJxwxfddmB5@dpg-d5voaiu3jp1c73ccecqg-a/for_the_kudos_db
+
+
+External Database URL
+postgresql://for_the_kudos_db_user:wE1WnHdljqOtcQCEk4RTsTJxwxfddmB5@dpg-d5voaiu3jp1c73ccecqg-a.frankfurt-postgres.render.com/for_the_kudos_db
+
+
+PSQL Command
+PGPASSWORD=wE1WnHdljqOtcQCEk4RTsTJxwxfddmB5 psql -h dpg-d5voaiu3jp1c73ccecqg-a.frankfurt-postgres.render.com -U for_the_kudos_db_user for_the_kudos_db
+
+
+Credentials
+Create new default credentials and delete the old ones when ready.
+
+Username
+1
+
+Password
+
+Created
+
+Open Connections
+for_the_kudos_db_userDefault	
+••••••••••••••••
+11min	0	
+
+New default credential
+Networking
+Inbound IP Restrictions
+Limit incoming traffic to your services from specific IP ranges. Sources are specified in CIDR block notation.
+
+1
+IP range is allowed from outside of your private network.
+
+Validate IP address
+0.0.0.0
+PostgreSQL Inbound IP Rules
+Source	Description	Delete
+CIDR block
+0.0.0.0/0
+Description
+everywhere
+
+
