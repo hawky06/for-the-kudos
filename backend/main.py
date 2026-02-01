@@ -28,6 +28,16 @@ REDIRECT_URI = "https://for-the-kudos.onrender.com/callback"
 # ----------------------------
 # Helper functions
 # ----------------------------
+def get_athlete(access_token):
+    headers = {"Authorization": f"Bearer {access_token}"}
+    r = requests.get(
+        "https://www.strava.com/api/v3/athlete",
+        headers=headers,
+        timeout=5
+    )
+    return r.json()
+
+
 def get_activities(access_token, per_page=50):
     headers = {"Authorization": f"Bearer {access_token}"}
     activities = []
@@ -144,6 +154,20 @@ def dashboard(request: Request):
         return RedirectResponse("/")
 
     return RedirectResponse("/")
+
+
+@app.get("/api/athlete")
+def api_athlete(request: Request):
+    token = request.session.get("access_token")
+    if not token:
+        return {"error": "unauthorized"}
+
+    if "athlete" in request.session:
+        return request.session["athlete"]
+
+    athlete = get_athlete(token)
+    request.session["athlete"] = athlete
+    return athlete
 
 
 @app.get("/api/stats")
