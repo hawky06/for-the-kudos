@@ -115,12 +115,18 @@ def callback(request: Request):
             "client_secret": CLIENT_SECRET,
             "code": code,
             "grant_type": "authorization_code"
-        }
+        },
+        timeout=10
     ).json()
 
-    request.session["access_token"] = token_response["access_token"]
+    # IMPORTANT: handle OAuth failure
+    access_token = token_response.get("access_token")
+    if not access_token:
+        print("OAuth error:", token_response)
+        return RedirectResponse("/?error=oauth")
 
-    # fast redirect
+    request.session["access_token"] = access_token
+
     return RedirectResponse("/dashboard")
 
 
@@ -129,10 +135,7 @@ def dashboard(request: Request):
     if "access_token" not in request.session:
         return RedirectResponse("/")
 
-    return templates.TemplateResponse(
-        "dashboard.html",
-        {"request": request}
-    )
+    return RedirectResponse("/")
 
 
 @app.get("/api/stats")
