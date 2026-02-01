@@ -13,7 +13,9 @@ app = FastAPI()
 
 app.add_middleware(
     SessionMiddleware,
-    secret_key=os.getenv("SESSION_SECRET", "dev-secret")
+    secret_key=os.getenv("SESSION_SECRET", "dev-secret"),
+    same_site="lax",
+    https_only=True
 )
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -86,7 +88,16 @@ def get_activity_detail(activity_id, access_token):
 # ----------------------------
 @app.get("/")
 def home(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request, "stats": None})
+    if "access_token" in request.session:
+        return templates.TemplateResponse(
+            "index.html",
+            {"request": request, "stats": request.session.get("stats")}
+        )
+
+    return templates.TemplateResponse(
+        "index.html",
+        {"request": request, "stats": None}
+    )
 
 
 @app.get("/login")
