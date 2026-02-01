@@ -47,14 +47,14 @@
         <h1>🏃‍♂️ For the Kudos 🏃‍♀️</h1>
 
         {% if logged_in %}
-            <p id="loading" class="text-center text-muted">
-                Loading your Strava stats…
-            </p>
             <div class="card text-center shadow mb-4" id="athleteCard" style="display:none;">
                 <img id="athleteAvatar" class="rounded-circle mx-auto mt-3" width="96">
                 <h3 id="athleteName"></h3>
                 <p class="text-muted" id="athleteLocation"></p>
             </div>
+            <p id="loading" class="text-center text-muted">
+                Loading your Strava stats…
+            </p>
             <div id="stats" style="display:none;">
                 <div class="card text-center shadow">
                     <h2>Total Activities</h2>
@@ -129,7 +129,7 @@
                     map.fitBounds(route.getBounds());
                 }
             })
-            
+
             .catch(err => {
                 document.getElementById("loading").innerText = "Failed to load stats 😢";
                 console.error(err);
