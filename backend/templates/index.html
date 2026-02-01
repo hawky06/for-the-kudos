@@ -110,7 +110,7 @@
                 return fetch(`/api/stats/top-activity?id=${summary.top_activity_id}`);
             })
 
-            .then(r => r ? r.json() : null)
+            .then(r => r && r.json())
             .then(activity => {
                 if (!activity) return;
 

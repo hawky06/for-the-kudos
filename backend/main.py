@@ -193,13 +193,23 @@ def stats_summary(request: Request):
         return {"error": "unauthorized"}
 
     activities = get_activities(token, per_page=50)
-    total_kudos = sum(a["kudos_count"] for a in activities)
+
+    if not activities:
+        return {
+            "total_activities": 0,
+            "total_kudos": 0,
+            "average_kudos": 0,
+            "top_activity_id": None
+        }
+
+    total_kudos = sum(a.get("kudos_count", 0) for a in activities)
+    top_activity = max(activities, key=lambda a: a.get("kudos_count", 0))
 
     return {
         "total_activities": len(activities),
         "total_kudos": total_kudos,
         "average_kudos": round(total_kudos / len(activities), 1),
-        "top_activity_id": max(activities, key=lambda a: a["kudos_count"])["id"]
+        "top_activity_id": top_activity["id"]
     }
 
 
@@ -207,23 +217,17 @@ def stats_summary(request: Request):
 def top_activity(request: Request):
     token = request.session.get("access_token")
     activity_id = request.query_params.get("id")
+
     if not token or not activity_id:
         return {"error": "bad request"}
 
     activity = get_activity_detail(activity_id, token)
+    map_data = activity.get("map") or {}
 
     return {
-        "name": activity["name"],
-        "kudos": activity["kudos_count"],
-        "distance_km": round(activity["distance"] / 1000, 2),
-        "date": activity["start_date_local"][:10],
-        "polyline": activity["map"]["summary_polyline"]
+        "name": activity.get("name"),
+        "kudos": activity.get("kudos_count", 0),
+        "distance_km": round(activity.get("distance", 0) / 1000, 2),
+        "date": activity.get("start_date_local", "")[:10],
+        "polyline": map_data.get("summary_polyline")
     }
-
-
-@app.get("/health/db")
-def db_health():
-    db = SessionLocal()
-    db.execute("SELECT 1")
-    db.close()
-    return {"db": "ok"}
