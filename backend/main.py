@@ -170,21 +170,36 @@ def api_athlete(request: Request):
     return athlete
 
 
-@app.get("/api/stats")
-def api_stats(request: Request):
-    access_token = request.session.get("access_token")
-    if not access_token:
+@app.get("/api/stats/summary")
+def stats_summary(request: Request):
+    token = request.session.get("access_token")
+    if not token:
         return {"error": "unauthorized"}
 
-    # cache hit
-    if "stats" in request.session:
-        return request.session["stats"]
+    activities = get_activities(token, per_page=50)
+    total_kudos = sum(a["kudos_count"] for a in activities)
 
-    # slow work
-    activities = get_activities(access_token)
-    stats = kudos_stats(activities, access_token)
+    return {
+        "total_activities": len(activities),
+        "total_kudos": total_kudos,
+        "average_kudos": round(total_kudos / len(activities), 1),
+        "top_activity_id": max(activities, key=lambda a: a["kudos_count"])["id"]
+    }
 
-    # cache result
-    request.session["stats"] = stats
 
-    return stats
+@app.get("/api/stats/top-activity")
+def top_activity(request: Request):
+    token = request.session.get("access_token")
+    activity_id = request.query_params.get("id")
+    if not token or not activity_id:
+        return {"error": "bad request"}
+
+    activity = get_activity_detail(activity_id, token)
+
+    return {
+        "name": activity["name"],
+        "kudos": activity["kudos_count"],
+        "distance_km": round(activity["distance"] / 1000, 2),
+        "date": activity["start_date_local"][:10],
+        "polyline": activity["map"]["summary_polyline"]
+    }
