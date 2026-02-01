@@ -4,10 +4,17 @@ from fastapi.responses import RedirectResponse
 import os, requests
 from dotenv import load_dotenv
 from datetime import datetime
+from starlette.middleware.sessions import SessionMiddleware
+
 
 load_dotenv()
 
 app = FastAPI()
+
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=os.getenv("SESSION_SECRET", "dev-secret")
+)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
@@ -48,7 +55,7 @@ def kudos_stats(activities, access_token):
     
     total_kudos = sum(a["kudos_count"] for a in activities)
     most_loved = max(activities, key=lambda a: a["kudos_count"])
-    
+
     full_activity = get_activity_detail(most_loved["id"], access_token)
 
     return {
@@ -96,8 +103,11 @@ def login():
 
 
 @app.get("/callback")
-def callback(request: Request, code: str):
-    # Exchange code for access token
+def callback(request: Request):
+    code = request.query_params.get("code")
+    if not code:
+        return RedirectResponse("/")
+
     token_response = requests.post(
         "https://www.strava.com/oauth/token",
         data={
@@ -106,36 +116,40 @@ def callback(request: Request, code: str):
             "code": code,
             "grant_type": "authorization_code"
         }
+    ).json()
+
+    request.session["access_token"] = token_response["access_token"]
+
+    # fast redirect
+    return RedirectResponse("/dashboard")
+
+
+@app.get("/dashboard")
+def dashboard(request: Request):
+    if "access_token" not in request.session:
+        return RedirectResponse("/")
+
+    return templates.TemplateResponse(
+        "dashboard.html",
+        {"request": request}
     )
-    token_json = token_response.json()
-    access_token = token_json.get("access_token")
 
-    print("Token response:", token_json)
 
+@app.get("/api/stats")
+def api_stats(request: Request):
+    access_token = request.session.get("access_token")
     if not access_token:
-        # If something went wrong, show a friendly error
-        return templates.TemplateResponse(
-            "index.html",
-            {
-                "request": request,
-                "stats": None,
-                "error": "Could not get access token. Please try logging in again."
-            }
-        )
+        return {"error": "unauthorized"}
 
-    # Fetch activities
+    # cache hit
+    if "stats" in request.session:
+        return request.session["stats"]
+
+    # slow work
     activities = get_activities(access_token)
-
-    # Make sure we got a list
-    if not isinstance(activities, list):
-        print("Strava returned unexpected data:", activities)
-        activities = []
-
-    # Calculate stats
     stats = kudos_stats(activities, access_token)
 
-    # Render template with stats
-    return templates.TemplateResponse(
-        "index.html",
-        {"request": request, "stats": stats}
-    )
+    # cache result
+    request.session["stats"] = stats
+
+    return stats
