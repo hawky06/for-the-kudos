@@ -104,28 +104,32 @@
                 document.getElementById("totalKudos").innerText = summary.total_kudos;
                 document.getElementById("avgKudos").innerText = summary.average_kudos;
 
+                if (!summary.top_activity_id) return;
+
                 // load slow part after summary is shown
                 return fetch(`/api/stats/top-activity?id=${summary.top_activity_id}`);
             })
 
-            .then(r => r.json())
+            .then(r => r ? r.json() : null)
             .then(activity => {
-                const activity = data.most_loved_activity;
+                if (!activity) return;
+
                 document.getElementById("activityName").innerText = activity.name;
                 document.getElementById("activityDate").innerText = "📅 " + activity.date;
                 document.getElementById("activityKudos").innerText = "❤️ " + activity.kudos + " kudos";
                 document.getElementById("activityDistance").innerText = "📏 " + activity.distance_km + " km";
 
-            if (activity.polyline) {
-                const coords = polyline.decode(activity.polyline);
-                const latlngs = coords.map(c => [c[0], c[1]]);
+                if (activity.polyline) {
+                    const coords = polyline.decode(activity.polyline);
+                    const latlngs = coords.map(c => [c[0], c[1]]);
 
-                const map = L.map('map');
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-                const route = L.polyline(latlngs).addTo(map);
-                map.fitBounds(route.getBounds());
-            }
+                    const map = L.map('map');
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+                    const route = L.polyline(latlngs).addTo(map);
+                    map.fitBounds(route.getBounds());
+                }
             })
+            
             .catch(err => {
                 document.getElementById("loading").innerText = "Failed to load stats 😢";
                 console.error(err);
