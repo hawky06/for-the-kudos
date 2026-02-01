@@ -3,7 +3,7 @@ from fastapi.templating import Jinja2Templates
 from fastapi.responses import RedirectResponse
 import os, requests
 from dotenv import load_dotenv
-from datetime import datetime
+from datetime import datetime, timedelta
 from starlette.middleware.sessions import SessionMiddleware
 
 
@@ -18,12 +18,28 @@ app.add_middleware(
     https_only=True
 )
 
+SESSION_TTL = timedelta(minutes=10)
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
 
 CLIENT_ID = os.getenv("STRAVA_CLIENT_ID")
 CLIENT_SECRET = os.getenv("STRAVA_CLIENT_SECRET")
 REDIRECT_URI = "https://for-the-kudos.onrender.com/callback"
+
+# ----------------------------
+# Caching functions
+# ----------------------------
+def get_cached_stats(request: Request):
+    stats = request.session.get("stats")
+    ts = request.session.get("stats_ts")
+
+    if stats and ts:
+        if datetime.utcnow() - datetime.fromisoformat(ts) < SESSION_TTL:
+            return stats
+
+    return None
+
 
 # ----------------------------
 # Helper functions
