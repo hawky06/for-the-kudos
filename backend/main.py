@@ -88,15 +88,12 @@ def get_activity_detail(activity_id, access_token):
 # ----------------------------
 @app.get("/")
 def home(request: Request):
-    if "access_token" in request.session:
-        return templates.TemplateResponse(
-            "index.html",
-            {"request": request, "stats": request.session.get("stats")}
-        )
-
     return templates.TemplateResponse(
         "index.html",
-        {"request": request, "stats": None}
+        {
+            "request": request,
+            "logged_in": "access_token" in request.session
+        }
     )
 
 

@@ -46,7 +46,10 @@
     <div class="container">
         <h1>🏃‍♂️ For the Kudos 🏃‍♀️</h1>
 
-        {% if stats %}
+        {% if logged_in %}
+            <p id="loading" class="text-center text-muted">
+                Loading your Strava stats…
+            </p>
             <div id="stats" style="display:none;">
                 <div class="card text-center shadow">
                     <h2>Total Activities</h2>
@@ -78,6 +81,7 @@
             fetch("/api/stats")
             .then(res => res.json())
             .then(data => {
+                document.getElementById("loading").style.display = "none";
                 document.getElementById("stats").style.display = "block";
 
                 document.getElementById("totalActivities").innerText = data.total_activities;
@@ -99,9 +103,12 @@
                     const route = L.polyline(latlngs).addTo(map);
                     map.fitBounds(route.getBounds());
                 }
+            })
+            .catch(err => {
+                document.getElementById("loading").innerText = "Failed to load stats 😢";
+                console.error(err);
             });
             </script>
-
             
         {% else %}
             <div class="text-center mt-5"></div>
