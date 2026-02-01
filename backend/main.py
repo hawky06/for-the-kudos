@@ -3,6 +3,7 @@ from fastapi.templating import Jinja2Templates
 from fastapi.responses import RedirectResponse
 import os, requests
 from dotenv import load_dotenv
+from datetime import datetime
 
 load_dotenv()
 
@@ -55,7 +56,9 @@ def kudos_stats(activities):
         "most_loved_activity": {
             "name": most_loved["name"],
             "kudos": most_loved["kudos_count"],
-            "distance_km": round(most_loved["distance"] / 1000, 2)
+            "distance_km": round(most_loved["distance"] / 1000, 2),
+            "date": datetime.fromisoformat(most_loved["start_date"].replace("Z", "")).strftime("%d-%b-%Y"),
+            "polyline": most_loved["map"]["summary_polyline"]
         }
     }
 

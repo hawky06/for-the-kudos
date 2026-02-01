@@ -3,7 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <title>For the Kudos</title>
+
+    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Leaflet CSS -->
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/@mapbox/polyline@1.1.1/src/polyline.js"></script>
+
     <style>
         body {
             background-color: #f8f9fa;
@@ -22,7 +33,14 @@
             display: block;
             margin: 50px auto;
         }
+       #map{
+        height: 300px;
+        border-radius: 12px;
+        margin-top: 15px;
+       }
     </style>
+
+
 </head>
 <body>
     <div class="container">
@@ -47,9 +65,30 @@
             <div class="card text-center shadow">
                 <h2>Most Loved Activity</h2>
                 <p class="h4">{{ stats.most_loved_activity.name }}</p>
-                <p>Kudos: {{ stats.most_loved_activity.kudos }}</p>
-                <p>Distance: {{ stats.most_loved_activity.distance_km }} km</p>
+                <p class="text-muted">📅 {{ stats.most_loved_activity.date }}</p>
+                <p>❤️ {{ stats.most_loved_activity.kudos }} kudos</p>
+                <p>📏 {{ stats.most_loved_activity.distance_km }} km</p>
+                <!-- Map Container -->
+                <div id="map"></div>
             </div>
+            
+            <script> 
+                const encodedPolyline = "{{ stats.most_loved_activity.polyline }}";
+
+                if (encodedPolyline) {
+                    const coords = polyline.decode(encodedPolyline);
+                    const latlngs = coords.map(c => [c[0], c[1]]);
+
+                    const map = L.map('map');
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '© OpenStreetMap'
+                    }).addTo(map);
+
+                    const route = L.polyline(latlngs, { weight: 4 }).addTo(map);
+                    map.fitBounds(route.getBounds());
+                }
+            </script>
+
         {% else %}
             <div class="text-center mt-5"></div>
                 <a href="/login" class="btn btn-primary btn-lg login-btn">Login with Strava to see your stats</a>
