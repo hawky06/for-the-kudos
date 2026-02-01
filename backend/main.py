@@ -42,13 +42,15 @@ def get_activities(access_token, per_page=50):
     return activities
 
 
-def kudos_stats(activities):
+def kudos_stats(activities, access_token):
     if not activities:
         return {"total_activities": 0, "total_kudos": 0, "average_kudos": 0, "most_loved_activity": {}}
     
     total_kudos = sum(a["kudos_count"] for a in activities)
     most_loved = max(activities, key=lambda a: a["kudos_count"])
     
+    full_activity = get_activity_detail(most_loved["id"], access_token)
+
     return {
         "total_activities": len(activities),
         "total_kudos": total_kudos,
@@ -58,9 +60,18 @@ def kudos_stats(activities):
             "kudos": most_loved["kudos_count"],
             "distance_km": round(most_loved["distance"] / 1000, 2),
             "date": datetime.fromisoformat(most_loved["start_date"].replace("Z", "")).strftime("%d-%b-%Y"),
-            "polyline": most_loved["map"]["summary_polyline"]
+            "polyline": most_loved["map"]["polyline"]
         }
     }
+
+
+def get_activity_detail(activity_id, access_token):
+    headers = {"Authorization": f"Bearer {access_token}"}
+    response = requests.get(
+        f"https://www.strava.com/api/v3/activities/{activity_id}",
+        headers=headers
+    )
+    return response.json()
 
 
 # ----------------------------
@@ -121,7 +132,7 @@ def callback(request: Request, code: str):
         activities = []
 
     # Calculate stats
-    stats = kudos_stats(activities)
+    stats = kudos_stats(activities, access_token)
 
     # Render template with stats
     return templates.TemplateResponse(
