@@ -106,16 +106,6 @@
 
                 if (!summary.top_activity_id) return;
 
-                db = SessionLocal()
-                athlete = get_athlete(token)
-                upsert_athlete(db, athlete, {
-                    "total_kudos": total_kudos,
-                    "total_activities": len(activities),
-                    "average_kudos": round(total_kudos / len(activities), 1),
-                })
-                db.close()
-
-
                 // load slow part after summary is shown
                 return fetch(`/api/stats/top-activity?id=${summary.top_activity_id}`);
             })

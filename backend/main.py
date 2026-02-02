@@ -218,6 +218,7 @@ def stats_summary(request: Request):
         return {"error": "unauthorized"}
 
     activities = get_activities(token, per_page=50)
+    athlete = get_athlete(token)
 
     if not activities:
         return {
@@ -230,10 +231,19 @@ def stats_summary(request: Request):
     total_kudos = sum(a.get("kudos_count", 0) for a in activities)
     top_activity = max(activities, key=lambda a: a.get("kudos_count", 0))
 
-    return {
+    stats = {
         "total_activities": len(activities),
         "total_kudos": total_kudos,
         "average_kudos": round(total_kudos / len(activities), 1),
+    }
+
+    # ✅ SAVE TO DATABASE
+    db = SessionLocal()
+    upsert_athlete(db, athlete, stats)
+    db.close()
+
+    return {
+        **stats,
         "top_activity_id": top_activity["id"]
     }
 
