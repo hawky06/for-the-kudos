@@ -106,6 +106,16 @@
 
                 if (!summary.top_activity_id) return;
 
+                db = SessionLocal()
+                athlete = get_athlete(token)
+                upsert_athlete(db, athlete, {
+                    "total_kudos": total_kudos,
+                    "total_activities": len(activities),
+                    "average_kudos": round(total_kudos / len(activities), 1),
+                })
+                db.close()
+
+
                 // load slow part after summary is shown
                 return fetch(`/api/stats/top-activity?id=${summary.top_activity_id}`);
             })
@@ -135,6 +145,36 @@
                 console.error(err);
             });
             </script>
+
+            <select id="sort">
+            <option value="total_kudos">Total Kudos</option>
+            <option value="average_kudos">Average Kudos</option>
+            <option value="total_activities">Total Activities</option>
+            </select>
+
+            <div id="leaderboard"></div>
+
+            <script>
+            function loadLeaderboard() {
+            const sort = document.getElementById("sort").value;
+            fetch(`/api/leaderboard?sort=${sort}`)
+                .then(r => r.json())
+                .then(data => {
+                document.getElementById("leaderboard").innerHTML =
+                    data.map(a => `
+                    <div class="card p-2 mb-2 d-flex flex-row align-items-center">
+                        <img src="${a.profile}" width="40" class="rounded-circle me-2"/>
+                        <strong>${a.name}</strong>
+                        <span class="ms-auto">❤️ ${a.total_kudos}</span>
+                    </div>
+                    `).join("");
+                });
+            }
+
+            document.getElementById("sort").addEventListener("change", loadLeaderboard);
+            loadLeaderboard();
+            </script>
+
             
         {% else %}
             <div class="text-center mt-5"></div>

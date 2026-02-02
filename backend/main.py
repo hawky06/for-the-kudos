@@ -5,6 +5,8 @@ import os, requests
 from dotenv import load_dotenv
 from datetime import datetime, timedelta
 from starlette.middleware.sessions import SessionMiddleware
+from database import engine, SessionLocal
+from models import Base, AthleteStats
 
 
 load_dotenv()
@@ -17,6 +19,8 @@ app.add_middleware(
     same_site="lax",
     https_only=True
 )
+
+Base.metadata.create_all(bind=engine)
 
 SESSION_TTL = timedelta(minutes=10)
 
@@ -107,6 +111,27 @@ def get_activity_detail(activity_id, access_token):
         headers=headers
     )
     return response.json()
+
+
+# ----------------------------
+# Database functions
+#-----------------------------
+def upsert_athlete(db, athlete, stats):
+    record = db.get(AthleteStats, athlete["id"])
+
+    if not record:
+        record = AthleteStats(athlete_id=athlete["id"])
+
+    record.firstname = athlete["firstname"]
+    record.lastname = athlete["lastname"]
+    record.profile = athlete["profile"]
+    record.total_kudos = stats["total_kudos"]
+    record.total_activities = stats["total_activities"]
+    record.average_kudos = stats["average_kudos"]
+    record.last_updated = datetime.utcnow()
+
+    db.add(record)
+    db.commit()
 
 
 # ----------------------------
@@ -231,3 +256,38 @@ def top_activity(request: Request):
         "date": activity.get("start_date_local", "")[:10],
         "polyline": map_data.get("summary_polyline")
     }
+
+
+@app.get("/api/leaderboard")
+def leaderboard(
+    sort: str = "total_kudos",
+    limit: int = 20
+):
+    valid_sorts = {
+        "total_kudos": AthleteStats.total_kudos,
+        "average_kudos": AthleteStats.average_kudos,
+        "total_activities": AthleteStats.total_activities,
+    }
+
+    order_col = valid_sorts.get(sort, AthleteStats.total_kudos)
+
+    db = SessionLocal()
+    rows = (
+        db.query(AthleteStats)
+        .order_by(order_col.desc())
+        .limit(limit)
+        .all()
+    )
+    db.close()
+
+    return [
+        {
+            "athlete_id": r.athlete_id,
+            "name": f"{r.firstname} {r.lastname}",
+            "profile": r.profile,
+            "total_kudos": r.total_kudos,
+            "average_kudos": r.average_kudos,
+            "total_activities": r.total_activities,
+        }
+        for r in rows
+    ]
