@@ -5,8 +5,8 @@ import os, requests
 from dotenv import load_dotenv
 from datetime import datetime, timedelta
 from starlette.middleware.sessions import SessionMiddleware
-from backend.database import engine, SessionLocal
-from backend.models import Base, AthleteStats
+from .database import engine, SessionLocal
+from .models import Base, AthleteStats
 
 
 load_dotenv()
