@@ -4,3 +4,5 @@ requests
 python-dotenv
 jinja2
 itsdangerous
+sqlalchemy>=2.0
+psycopg2-binary
