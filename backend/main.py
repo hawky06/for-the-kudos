@@ -301,3 +301,8 @@ def leaderboard(
         }
         for r in rows
     ]
+
+
+@app.get("/")
+def home():
+    return {"message": "LEADERBOARD BRANCH 🚀"}
