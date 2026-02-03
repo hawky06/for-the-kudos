@@ -165,7 +165,11 @@
             loadLeaderboard();
             </script>
 
-            
+        {% elif IS_PREVIEW %}
+            <button disabled class="btn disabled">
+                Login disabled in preview environment
+            </button>
+
         {% else %}
             <div class="text-center mt-5"></div>
                 <a href="/login" class="btn btn-primary btn-lg login-btn">Login with Strava to see your stats</a>

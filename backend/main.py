@@ -146,14 +146,15 @@ def home(request: Request):
         {
             "request": request,
             "logged_in": "access_token" in request.session
+            "IS_PREVIEW": IS_PREVIEW
         }
     )
 
 
 @app.get("/login")
 def login():
-    if IS_PREVIEW:
-        raise HTTPException(status_code=403, detail="OAuth disabled in preview environments.")
+    #if IS_PREVIEW:
+        #raise HTTPException(status_code=403, detail="OAuth disabled in preview environments.")
     
     url = (
         "https://www.strava.com/oauth/authorize"
@@ -218,6 +219,14 @@ def api_athlete(request: Request):
 
 @app.get("/api/stats/summary")
 def stats_summary(request: Request):
+    if IS_PREVIEW:
+        return {
+            "total_activities": 0,
+            "total_kudos": 0,
+            "average_kudos": 0,
+            "top_activity_id": None
+        }
+
     token = request.session.get("access_token")
     if not token:
         return {"error": "unauthorized"}
@@ -242,7 +251,7 @@ def stats_summary(request: Request):
         "average_kudos": round(total_kudos / len(activities), 1),
     }
 
-    # ✅ SAVE TO DATABASE
+    # SAVE TO DATABASE
     db = SessionLocal()
     upsert_athlete(db, athlete, stats)
     db.close()
@@ -255,6 +264,15 @@ def stats_summary(request: Request):
 
 @app.get("/api/stats/top-activity")
 def top_activity(request: Request):
+    if IS_PREVIEW:
+        return {
+            "name": "Preview Activity",
+            "kudos": 0,
+            "distance_km": 0,
+            "date": "",
+            "polyline": None
+        }
+
     token = request.session.get("access_token")
     activity_id = request.query_params.get("id")
 
@@ -278,6 +296,20 @@ def leaderboard(
     sort: str = "total_kudos",
     limit: int = 20
 ):
+    
+    if IS_PREVIEW:
+        return [
+            {
+                "athlete_id": i,
+                "name": f"Preview User {i}",
+                "profile": None,
+                "total_kudos": 0,
+                "average_kudos": 0,
+                "total_activities": 0,
+            }
+            for i in range(1, 6)
+        ]
+    
     valid_sorts = {
         "total_kudos": AthleteStats.total_kudos,
         "average_kudos": AthleteStats.average_kudos,
