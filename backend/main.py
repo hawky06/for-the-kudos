@@ -145,7 +145,7 @@ def home(request: Request):
         "index.html",
         {
             "request": request,
-            "logged_in": "access_token" in request.session,
+            "logged_in": True if IS_PREVIEW else "access_token" in request.session,
             "IS_PREVIEW": IS_PREVIEW,
         }
     )
