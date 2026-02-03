@@ -24,6 +24,8 @@ Base.metadata.create_all(bind=engine)
 
 SESSION_TTL = timedelta(minutes=10)
 
+IS_PREVIEW = os.getenv("RENDER_GIT_BRANCH") != "main"
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
 
@@ -150,6 +152,9 @@ def home(request: Request):
 
 @app.get("/login")
 def login():
+    if IS_PREVIEW:
+        raise HTTPException(status_code=403, detail="OAuth disabled in preview environments.")
+    
     url = (
         "https://www.strava.com/oauth/authorize"
         f"?client_id={CLIENT_ID}"
