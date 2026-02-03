@@ -20,19 +20,41 @@
             background-color: #f8f9fa;
             padding-top: 50px;
         }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+        }
+
         .card {
             margin: 20px auto;
             max-width: 500px;
             padding: 20px;
         }
+
+        .stats .card,
+        .leaderboard .card {
+        max-width: 100%;
+        }
+
         h1 {
             text-align: center;
             margin-bottom: 40px;
         }
+
         .login-btn {
             display: block;
             margin: 50px auto;
         }
+
        #map{
         height: 300px;
         border-radius: 12px;
@@ -60,39 +82,59 @@
         <h1>🏃‍♂️ For the Kudos 🏃‍♀️</h1>
 
         {% if logged_in %}
-            <div class="card text-center shadow mb-4" id="athleteCard" style="display:none;">
-                <img id="athleteAvatar" class="rounded-circle mx-auto mt-3" width="96">
-                <h3 id="athleteName"></h3>
-                <p class="text-muted" id="athleteLocation"></p>
-            </div>
-            <p id="loading" class="text-center text-muted">
-                Loading your Strava stats…
-            </p>
-            <div id="stats" style="display:none;">
-                <div class="card text-center shadow">
-                    <h2>Total Activities</h2>
-                    <p class="display-5" id="totalActivities">-</p>
-                </div>
+            <div class="dashboard"> 
+                <!-- LEFT: Stats -->
+                <section class="stats">
+                    <div class="card text-center shadow mb-4" id="athleteCard" style="display:none;">
+                        <img id="athleteAvatar" class="rounded-circle mx-auto mt-3" width="96">
+                        <h3 id="athleteName"></h3>
+                        <p class="text-muted" id="athleteLocation"></p>
+                    </div>
+                    <p id="loading" class="text-center text-muted">
+                        Loading your Strava stats…
+                    </p>
+                    <div id="stats" style="display:none;">
+                        <div class="card text-center shadow">
+                            <h2>Total Activities</h2>
+                            <p class="display-5" id="totalActivities">-</p>
+                        </div>
 
-                <div class="card text-center shadow">
-                    <h2>Total Kudos</h2>
-                    <p class="display-5" id="totalKudos">-</p>
-                </div>
+                        <div class="card text-center shadow">
+                            <h2>Total Kudos</h2>
+                            <p class="display-5" id="totalKudos">-</p>
+                        </div>
 
-                <div class="card text-center shadow">
-                    <h2>Average Kudos per Activity</h2>
-                    <p class="display-5" id="avgKudos">-</p>
-                </div>
+                        <div class="card text-center shadow">
+                            <h2>Average Kudos per Activity</h2>
+                            <p class="display-5" id="avgKudos">-</p>
+                        </div>
 
-                <div class="card text-center shadow">
-                    <h2>Most Loved Activity</h2>
-                    <p class="h4" id="activityName"></p>
-                    <p class="text-muted" id="activityDate"></p>
-                    <p id="activityKudos"></p>
-                    <p id="activityDistance"></p>
-                    <div id="map"></div>
-                </div>
-            </div>
+                        <div class="card text-center shadow">
+                            <h2>Most Loved Activity</h2>
+                            <p class="h4" id="activityName"></p>
+                            <p class="text-muted" id="activityDate"></p>
+                            <p id="activityKudos"></p>
+                            <p id="activityDistance"></p>
+                            <div id="map"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- RIGHT: Leaderboard -->
+                <section class="leaderboard">
+                    <div class="card shadow p-3">
+                        <h3 class="mb-3">🏆 Leaderboard</h3>
+
+                        <select id="sort" class="form-select mb-3">
+                            <option value="total_kudos">Total Kudos</option>
+                            <option value="average_kudos">Average Kudos</option>
+                            <option value="total_activities">Total Activities</option>
+                        </select>
+
+                        <div id="leaderboard"></div>
+                    </div>
+                </section>
+            </div>  
 
             
             <script>
@@ -149,14 +191,6 @@
             });
             </script>
 
-            <select id="sort">
-            <option value="total_kudos">Total Kudos</option>
-            <option value="average_kudos">Average Kudos</option>
-            <option value="total_activities">Total Activities</option>
-            </select>
-
-            <div id="leaderboard"></div>
-
             <script>
             function loadLeaderboard() {
             const sort = document.getElementById("sort").value;
@@ -189,14 +223,15 @@
             </div>
         {% endif %}
     </div>
-</body>
 
-<footer class="site-footer">
-  <p>
-    For the Kudos is an independent, open-source project using the Strava API.
-    Not affiliated with Strava.
-    <a href="https://github.com/hawky06/for-the-kudos" target="_blank">View source on GitHub</a>
-  </p>
-</footer>
+    <footer class="site-footer">
+        <p>
+            For the Kudos is an independent, open-source project using the Strava API.
+            Not affiliated with Strava.
+            <a href="https://github.com/hawky06/for-the-kudos" target="_blank">View source on GitHub</a>
+        </p>
+    </footer>
+    
+</body>
 
 </html>
