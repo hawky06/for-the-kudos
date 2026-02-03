@@ -33,9 +33,9 @@ CLIENT_ID = os.getenv("STRAVA_CLIENT_ID")
 CLIENT_SECRET = os.getenv("STRAVA_CLIENT_SECRET")
 REDIRECT_URI = "https://for-the-kudos.onrender.com/callback"
 
-print("SERVICE TYPE:", os.getenv("RENDER_SERVICE_TYPE"))
-print("IS_PREVIEW:", IS_PREVIEW)
-print("DATABASE_URL exists:", bool(os.getenv("DATABASE_URL")))
+print("SERVICE TYPE:", os.getenv("RENDER_SERVICE_TYPE")) # testing
+print("IS_PREVIEW:", IS_PREVIEW) # testing
+print("DATABASE_URL exists:", bool(os.getenv("DATABASE_URL"))) # testing
 
 
 # ----------------------------
@@ -244,6 +244,8 @@ def stats_summary(request: Request):
             "top_activity_id": None
         }
 
+    print("fetching real stats from DB") # testing
+
     total_kudos = sum(a.get("kudos_count", 0) for a in activities)
     top_activity = max(activities, key=lambda a: a.get("kudos_count", 0))
 
@@ -257,6 +259,8 @@ def stats_summary(request: Request):
     db = SessionLocal()
     upsert_athlete(db, athlete, stats)
     db.close()
+
+    print("Stats payload:", stats) # testing
 
     return {
         **stats,
