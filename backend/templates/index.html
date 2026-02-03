@@ -192,20 +192,38 @@
             </script>
 
             <script>
+            // Leaderboard
             function loadLeaderboard() {
-            const sort = document.getElementById("sort").value;
-            fetch(`/api/leaderboard?sort=${sort}`)
-                .then(r => r.json())
-                .then(data => {
-                document.getElementById("leaderboard").innerHTML =
-                    data.map(a => `
-                    <div class="card p-2 mb-2 d-flex flex-row align-items-center">
-                        <img src="${a.profile}" width="40" class="rounded-circle me-2"/>
-                        <strong>${a.name}</strong>
-                        <span class="ms-auto">❤️ ${a.total_kudos}</span>
-                    </div>
-                    `).join("");
-                });
+                const sort = document.getElementById("sort").value;
+
+                fetch(`/api/leaderboard?sort=${sort}`)
+                    .then(r => r.json())
+                    .then(data => {
+                    document.getElementById("leaderboard").innerHTML =
+                        data.map(a => {
+                        let value;
+                        let icon;
+
+                        if (sort === "average_kudos") {
+                            value = a.average_kudos;
+                            icon = "💖";
+                        } else if (sort === "total_activities") {
+                            value = a.total_activities;
+                            icon = "🏃";
+                        } else {
+                            value = a.total_kudos;
+                            icon = "❤️";
+                        }
+
+                        return `
+                            <div class="card p-2 mb-2 d-flex flex-row align-items-center">
+                            <img src="${a.profile}" width="40" class="rounded-circle me-2"/>
+                            <strong>${a.name}</strong>
+                            <span class="ms-auto">${icon} ${value}</span>
+                            </div>
+                        `;
+                        }).join("");
+                    });
             }
 
             document.getElementById("sort").addEventListener("change", loadLeaderboard);
@@ -231,7 +249,7 @@
             <a href="https://github.com/hawky06/for-the-kudos" target="_blank">View source on GitHub</a>
         </p>
     </footer>
-    
+
 </body>
 
 </html>
