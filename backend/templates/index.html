@@ -83,9 +83,10 @@
             border: 1px solid #fff !important;
         }
 
-        [data-theme="dark"] img {
+        [data-theme="dark"] .site-logo {
             filter: brightness(0) invert(1);
         }
+
 
         h1 {
             text-align: center;
@@ -96,6 +97,12 @@
             display: block;
             margin: 50px auto;
         }
+
+        #athleteAvatar {
+            background: #fff;
+            padding: 2px;
+        }
+
 
        #map{
         background: var(--card-bg);
@@ -118,25 +125,31 @@
         }
     </style>
 
-<img id="site-logo" src="/static/for-the-kudos-logo.png">
-
 </head>
 <body>
-    <header style="padding: 10px">
-        <img src="static/for-the-kudos-logo.png"
-            alt="Logo"
-            style="height: 50px; vertical-align: middle">
-    </header>     
+    <header class="d-flex align-items-center justify-content-between px-3 py-2">
+        <a href="/" class="d-flex align-items-center text-decoration-none">
+            <img
+                src="/static/for-the-kudos-logo.png"
+                alt="For the Kudos"
+                style="height: 48px;"
+            >
+        </a>
 
-    <a href="/">
-        <img src="/static/for-the-kudos-logo.png"
-            alt="Logo"
-            style="height: 50px;">
-    </a>
+        <button
+            id="theme-toggle"
+            class="btn btn-outline-secondary"
+        >
+            🌙 Dark Mode
+        </button>
+    </header>
 
-    <button id="theme-toggle" class="btn btn-outline-secondary float-end">
-        🌙 Dark Mode
-    </button>
+    <img
+        src="/static/for-the-kudos-logo.png"
+        class="site-logo"
+        alt="For the Kudos"
+        style="height: 48px;"
+    >
 
     <div class="container">
         <h1>🏃‍♂️ For the Kudos 🏃‍♀️</h1>
