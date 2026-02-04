@@ -197,14 +197,14 @@ def login(request: Request):
     request.session["oauth_state"] = state
 
     url = (
-        "https://www.strava.com/oauth/authorize"
-        f"?client_id={CLIENT_ID}"
-        "&response_type=code"
-        f"&redirect_uri={REDIRECT_URI}"
-        "&scope=read,activity:read,profile:read_all,activity:read_all"
-        "&approval_prompt=force"
-        f"&state={state}"
-    )
+    "https://www.strava.com/oauth/authorize"
+    f"?client_id={CLIENT_ID}"
+    "&response_type=code"
+    f"&redirect_uri={REDIRECT_URI}"
+    "&scope=read,activity:read,profile:read_all,activity:read_all"
+    "&approval_prompt=force"
+    f"&state={state}"
+)
 
     return RedirectResponse(url)
 
