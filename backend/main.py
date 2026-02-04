@@ -41,6 +41,25 @@ print("DATABASE_URL exists:", bool(os.getenv("DATABASE_URL"))) # testing
 # ----------------------------
 # OAuth functions
 # ----------------------------
+def ensure_valid_token(request):
+    access = request.session.get("access_token")
+    refresh = request.session.get("refresh_token")
+    expires_at = request.session.get("expires_at")
+
+    if not access:
+        raise HTTPException(401, "Not authenticated")
+
+    # Token expired?
+    if expires_at and datetime.utcnow().timestamp() > expires_at:
+        new = refresh_token(refresh)
+        request.session["access_token"] = new["access_token"]
+        request.session["refresh_token"] = new["refresh_token"]
+        request.session["expires_at"] = new["expires_at"]
+        return new["access_token"]
+
+    return access
+
+
 def refresh_token(refresh_token):
     r = requests.post(
         "https://www.strava.com/oauth/token",
@@ -68,8 +87,14 @@ def get_athlete(access_token):
     # Rate limit handling
     if response.status_code == 429:
         raise HTTPException(status_code=503, detail="Strava rate limit exceeded")
-    
-    return response.json()
+
+    data = response.json()
+
+    # If Strava returns an error, stop immediately
+    if "id" not in data:
+        raise HTTPException(status_code=401, detail="Invalid or expired Strava token")
+
+    return data
 
 
 def get_activities(access_token, per_page=50):
@@ -164,26 +189,6 @@ def home(request: Request):
     )
 
 
-@app.get("/login")
-def login(request: Request):
-
-    # Generate and store state token
-    state = secrets.token_urlsafe(16)
-    request.session["oauth_state"] = state
-
-    url = (
-        "https://www.strava.com/oauth/authorize"
-        f"?client_id={CLIENT_ID}"
-        "&response_type=code"
-        f"&redirect_uri={REDIRECT_URI}"
-        "&scope=read,activity:read"
-        "&approval_prompt=force"
-        f"&state={state}"   # ← include it in the redirect URL
-    )
-
-    return RedirectResponse(url)
-
-
 @app.get("/callback")
 def callback(request: Request):
     code = request.query_params.get("code")
@@ -207,13 +212,15 @@ def callback(request: Request):
         timeout=10
     ).json()
 
-    # IMPORTANT: handle OAuth failure
-    access_token = token_response.get("access_token")
-    if not access_token:
+    # Handle OAuth failure
+    if "access_token" not in token_response:
         print("OAuth error:", token_response)
         return RedirectResponse("/?error=oauth")
 
-    request.session["access_token"] = access_token
+    # STORE ALL TOKENS HERE
+    request.session["access_token"] = token_response["access_token"]
+    request.session["refresh_token"] = token_response["refresh_token"]
+    request.session["expires_at"] = token_response["expires_at"]
 
     return RedirectResponse("/dashboard")
 
@@ -250,10 +257,14 @@ def stats_summary(request: Request):
             "top_activity_id": None
         }
 
-    token = request.session.get("access_token")
-    if not token:
+    # ensure user is logged in
+    if "access_token" not in request.session:
         return {"error": "unauthorized"}
+    
+    # refresh token if expired
+    token = ensure_valid_token(request)
 
+    # fetch athlete info
     athlete = get_athlete(token)
 
     db = SessionLocal()
