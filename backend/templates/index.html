@@ -20,10 +20,9 @@
     <style>
         /* THEME VARIABLES */
         :root {
-            --bg: #ffffff;
-            --text: #111111;
-            --card-bg: #f5f5f5;
-            --accent: #fc4c02;
+            --bg: #111;
+            --text: #fff;
+            --card-bg: #1c1c1c;
         }
 
         [data-theme="dark"] {
@@ -42,10 +41,12 @@
 
         .card {
             background: var(--card-bg);
+            color: var(--text);
         }
 
         body {
-            background-color: #f8f9fa;
+            background-color: var(--bg);
+            color: var(--text);
             padding-top: 50px;
         }
 
@@ -73,6 +74,11 @@
         max-width: 100%;
         }
 
+        .leaderboard .card {
+            background: var(--card-bg);
+            color: var(--text);
+        }
+
         h1 {
             text-align: center;
             margin-bottom: 40px;
@@ -84,6 +90,7 @@
         }
 
        #map{
+        background: var(--card-bg);
         height: 300px;
         border-radius: 12px;
         margin-top: 15px;
