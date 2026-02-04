@@ -41,7 +41,7 @@ print("DATABASE_URL exists:", bool(os.getenv("DATABASE_URL"))) # testing
 # ----------------------------
 # OAuth functions
 # ----------------------------
-def ensure_valid_token(request):
+def ensure_valid_token(request: Request):
     access = request.session.get("access_token")
     refresh = request.session.get("refresh_token")
     expires_at = request.session.get("expires_at")
@@ -49,15 +49,22 @@ def ensure_valid_token(request):
     if not access:
         raise HTTPException(401, "Not authenticated")
 
+    # If we don't have refresh data yet, just trust access token
+    if not refresh or not expires_at:
+        return access
+
     # Token expired?
-    if expires_at and datetime.utcnow().timestamp() > expires_at:
+    if datetime.utcnow().timestamp() > expires_at:
         new = refresh_token(refresh)
+
         request.session["access_token"] = new["access_token"]
         request.session["refresh_token"] = new["refresh_token"]
         request.session["expires_at"] = new["expires_at"]
+
         return new["access_token"]
 
     return access
+
 
 
 def refresh_token(refresh_token):
