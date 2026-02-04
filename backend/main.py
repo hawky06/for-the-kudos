@@ -201,7 +201,7 @@ def login(request: Request):
         f"?client_id={CLIENT_ID}"
         "&response_type=code"
         f"&redirect_uri={REDIRECT_URI}"
-        "&scope=read,activity:read"
+        "&scope=read,activity:read,profile:read_all,activity:read_all"
         "&approval_prompt=force"
         f"&state={state}"
     )
