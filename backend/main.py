@@ -58,7 +58,7 @@ def refresh_token(refresh_token):
 # ----------------------------
 def get_athlete(access_token):
     headers = {"Authorization": f"Bearer {access_token}"}
-    r = requests.get(
+    response = requests.get(
         "https://www.strava.com/api/v3/athlete",
         headers=headers,
         timeout=5
@@ -68,7 +68,7 @@ def get_athlete(access_token):
     if response.status_code == 429:
         raise HTTPException(status_code=503, detail="Strava rate limit exceeded")
     
-    return r.json()
+    return response.json()
 
 
 def get_activities(access_token, per_page=50):
@@ -166,7 +166,7 @@ def home(request: Request):
 @app.get("/login")
 def login(request: Request):
 
-    # 🔐 Generate and store state token
+    # Generate and store state token
     state = secrets.token_urlsafe(16)
     request.session["oauth_state"] = state
 
