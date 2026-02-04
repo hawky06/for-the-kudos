@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 from starlette.middleware.sessions import SessionMiddleware
 from .database import engine, SessionLocal
 from .models import Base, AthleteStats
+import secrets
 
 
 load_dotenv()
@@ -261,9 +262,9 @@ def stats_summary(request: Request):
     if cached:
         db.close()
         return {
-            "total_activities": cached.total_activities,
-            "total_kudos": cached.total_kudos,
-            "average_kudos": cached.average_kudos,
+            "total_activities": cached["total_activities"],
+            "total_kudos": cached["total_kudos"],
+            "average_kudos": cached["average_kudos"],
             "top_activity_id": None
         }
     
