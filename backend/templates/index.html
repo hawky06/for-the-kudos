@@ -4,6 +4,13 @@
     <meta charset="UTF-8">
     <title>For the Kudos</title>
 
+    <h1 class="text-center">
+        <img src="/static/for-the-kudos-logo.png" 
+            alt="Logo" 
+            style="height: 50px; vertical-align: middle; margin-right: 10px;">
+        For the Kudos
+    </h1>
+
     <button id="theme-toggle" class="btn btn-outline-secondary float-end">🌙 Dark Mode</button>
 
     <!-- Bootstrap CSS -->
@@ -85,6 +92,10 @@
             border: 1px solid #fff !important;
         }
 
+        [data-theme="dark"] img {
+            filter: brightness(0) invert(1);
+        }
+
         h1 {
             text-align: center;
             margin-bottom: 40px;
@@ -116,6 +127,7 @@
         }
     </style>
 
+<img id="site-logo" src="/static/for-the-kudos-logo.png">
 
 </head>
 <body>

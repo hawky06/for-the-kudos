@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import RedirectResponse
+from fastapi.staticfiles import StaticFiles
 import os, requests
 from dotenv import load_dotenv
 from datetime import datetime, timedelta
@@ -13,6 +14,8 @@ import secrets
 load_dotenv()
 
 app = FastAPI()
+
+app.mount("/static", StaticFiles(directory="for-the-kudos"), name="static")
 
 IS_PREVIEW = os.getenv("RENDER_SERVICE_TYPE") == "preview"
 
