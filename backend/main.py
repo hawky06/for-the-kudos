@@ -189,6 +189,26 @@ def home(request: Request):
     )
 
 
+@app.get("/login")
+def login(request: Request):
+
+    # Generate and store state token
+    state = secrets.token_urlsafe(16)
+    request.session["oauth_state"] = state
+
+    url = (
+        "https://www.strava.com/oauth/authorize"
+        f"?client_id={CLIENT_ID}"
+        "&response_type=code"
+        f"&redirect_uri={REDIRECT_URI}"
+        "&scope=read,activity:read"
+        "&approval_prompt=force"
+        f"&state={state}"
+    )
+
+    return RedirectResponse(url)
+
+
 @app.get("/callback")
 def callback(request: Request):
     code = request.query_params.get("code")
