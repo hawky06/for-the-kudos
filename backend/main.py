@@ -15,7 +15,7 @@ load_dotenv()
 
 app = FastAPI()
 
-app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/static", StaticFiles(directory="backend/static"), name="static")
 
 IS_PREVIEW = os.getenv("RENDER_SERVICE_TYPE") == "preview"
 
