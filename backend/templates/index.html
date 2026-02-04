@@ -41,8 +41,8 @@
         }
 
         .card {
-            background: var(--card-bg);
-            color: var(--text);
+            background: var(--card-bg) !important;
+            color: var(--text) !important;
         }
 
         body {
@@ -76,8 +76,13 @@
         }
 
         .leaderboard .card {
-            background: var(--card-bg);
-            color: var(--text);
+            background: var(--card-bg) !important;
+            color: var(--text) !important;
+        }
+
+        /* White outline for leaderboard cards in dark mode */
+        [data-theme="dark"] .leaderboard .card {
+            border: 1px solid #fff !important;
         }
 
         h1 {
