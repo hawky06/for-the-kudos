@@ -37,19 +37,20 @@ print("SERVICE TYPE:", os.getenv("RENDER_SERVICE_TYPE")) # testing
 print("IS_PREVIEW:", IS_PREVIEW) # testing
 print("DATABASE_URL exists:", bool(os.getenv("DATABASE_URL"))) # testing
 
-
 # ----------------------------
-# Caching functions
+# OAuth functions
 # ----------------------------
-def get_cached_stats(request: Request):
-    stats = request.session.get("stats")
-    ts = request.session.get("stats_ts")
-
-    if stats and ts:
-        if datetime.utcnow() - datetime.fromisoformat(ts) < SESSION_TTL:
-            return stats
-
-    return None
+def refresh_token(refresh_token):
+    r = requests.post(
+        "https://www.strava.com/oauth/token",
+        data={
+            "client_id": CLIENT_ID,
+            "client_secret": CLIENT_SECRET,
+            "grant_type": "refresh_token",
+            "refresh_token": refresh_token,
+        }
+    )
+    return r.json()
 
 
 # ----------------------------
@@ -62,6 +63,11 @@ def get_athlete(access_token):
         headers=headers,
         timeout=5
     )
+
+    # Rate limit handling
+    if response.status_code == 429:
+        raise HTTPException(status_code=503, detail="Strava rate limit exceeded")
+    
     return r.json()
 
 
@@ -76,9 +82,13 @@ def get_activities(access_token, per_page=50):
             headers=headers,
             params={"per_page": per_page, "page": page}
         )
+
+        # Rate limit handling
+        if response.status_code == 429:
+            raise HTTPException(status_code=503, detail="Strava rate limit exceeded")
+
         data = response.json()
 
-        # Stop if no more activities or error
         if not data or isinstance(data, dict) and data.get("message"):
             break
 
@@ -88,37 +98,18 @@ def get_activities(access_token, per_page=50):
     return activities
 
 
-def kudos_stats(activities, access_token):
-    if not activities:
-        return {"total_activities": 0, "total_kudos": 0, "average_kudos": 0, "most_loved_activity": {}}
-    
-    total_kudos = sum(a["kudos_count"] for a in activities)
-    most_loved = max(activities, key=lambda a: a["kudos_count"])
-
-    full_activity = get_activity_detail(most_loved["id"], access_token)
-
-    return {
-        "total_activities": len(activities),
-        "total_kudos": total_kudos,
-        "average_kudos": round(total_kudos / len(activities), 1),
-        "most_loved_activity": {
-            "name": most_loved["name"],
-            "kudos": most_loved["kudos_count"],
-            "distance_km": round(most_loved["distance"] / 1000, 2),
-            "date": most_loved["start_date_local"][:10],
-            "polyline": full_activity["map"]["polyline"]
-        }
-    }
-
-
 def get_activity_detail(activity_id, access_token):
     headers = {"Authorization": f"Bearer {access_token}"}
     response = requests.get(
         f"https://www.strava.com/api/v3/activities/{activity_id}",
         headers=headers
     )
-    return response.json()
 
+    # Rate limit handling
+    if response.status_code == 429:
+        raise HTTPException(status_code=503, detail="Strava rate limit exceeded")
+
+    return response.json()
 
 # ----------------------------
 # Database functions
@@ -129,8 +120,12 @@ def get_cached_athlete_stats(db, athlete_id):
     if not record:
         return None
     
-    if datetime.utcnow() - record.last_updated < timedelta(hours = 6):
-        return record
+    if datetime.utcnow() - record.last_updated < timedelta(hours=6):
+        return {
+            "total_activities": record.total_activities,
+            "total_kudos": record.total_kudos,
+            "average_kudos": record.average_kudos,
+        }
     
     return None
         
@@ -169,7 +164,12 @@ def home(request: Request):
 
 
 @app.get("/login")
-def login(): 
+def login(request: Request):
+
+    # 🔐 Generate and store state token
+    state = secrets.token_urlsafe(16)
+    request.session["oauth_state"] = state
+
     url = (
         "https://www.strava.com/oauth/authorize"
         f"?client_id={CLIENT_ID}"
@@ -177,13 +177,21 @@ def login():
         f"&redirect_uri={REDIRECT_URI}"
         "&scope=read,activity:read"
         "&approval_prompt=force"
+        f"&state={state}"   # ← include it in the redirect URL
     )
+
     return RedirectResponse(url)
 
 
 @app.get("/callback")
 def callback(request: Request):
     code = request.query_params.get("code")
+    state = request.query_params.get("state")
+
+    # Validate state token
+    if state != request.session.get("oauth_state"):
+        raise HTTPException(status_code=400, detail="Invalid OAuth state")
+
     if not code:
         return RedirectResponse("/")
 
