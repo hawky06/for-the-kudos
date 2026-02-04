@@ -241,7 +241,7 @@
                     .then(r => r.json())
                     .then(data => {
                     document.getElementById("leaderboard").innerHTML =
-                        data.map(a => {
+                        data.map((a, index) => {
                         let value;
                         let icon;
 
@@ -258,9 +258,10 @@
 
                         return `
                             <div class="card p-2 mb-2 d-flex flex-row align-items-center">
-                            <img src="${a.profile}" width="40" class="rounded-circle me-2"/>
-                            <strong>${a.name}</strong>
-                            <span class="ms-auto">${icon} ${value}</span>
+                                <span class="me-3 fw-bold" style="font-size: 1.2rem;">${index + 1}</span>
+                                <img src="${a.profile}" width="40" class="rounded-circle me-2"/>
+                                <strong>${a.name}</strong>
+                                <span class="ms-auto">${icon} ${value}</span>
                             </div>
                         `;
                         }).join("");
