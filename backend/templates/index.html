@@ -270,6 +270,23 @@
 
             document.getElementById("sort").addEventListener("change", loadLeaderboard);
             loadLeaderboard();
+
+            // Show user's rank if not in top 20
+            fetch("/api/leaderboard/rank")
+                .then(r => r.json())
+                .then(rank => {
+                    if (!rank.rank) return;
+
+                    if (rank.rank > 20) {
+                        document.getElementById("leaderboard").innerHTML += `
+                            <div class="card p-2 mt-3 d-flex flex-row align-items-center bg-warning-subtle">
+                                <span class="me-3 fw-bold">${rank.rank}</span>
+                                <strong>You</strong>
+                                <span class="ms-auto">⬇️ Your position</span>
+                            </div>
+                        `;
+                    }
+                });
             </script>
 
         {% elif IS_PREVIEW %}

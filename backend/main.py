@@ -417,3 +417,29 @@ def leaderboard(
         for r in rows
     ]
 
+
+@app.get("/api/leaderboard/rank")
+def leaderboard_rank(request: Request):
+    if "access_token" not in request.session:
+        return {"error": "unauthorized"}
+
+    athlete = request.session.get("athlete")
+    if not athlete:
+        return {"error": "no athlete"}
+
+    athlete_id = athlete["id"]
+
+    db = SessionLocal()
+    rows = (
+        db.query(AthleteStats)
+        .order_by(AthleteStats.total_kudos.desc())
+        .all()
+    )
+    db.close()
+
+    # Find index
+    for i, row in enumerate(rows):
+        if row.athlete_id == athlete_id:
+            return {"rank": i + 1}
+
+    return {"rank": None}
