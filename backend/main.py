@@ -123,6 +123,18 @@ def get_activity_detail(activity_id, access_token):
 # ----------------------------
 # Database functions
 #-----------------------------
+def get_cached_athlete_stats(db, athlete_id):
+    record = db.get(AthleteStats, athlete_id)
+
+    if not record:
+        return None
+    
+    if datetime.utcnow() - record.last_updated < timedelta(hours = 6):
+        return record
+    
+    return None
+        
+
 def upsert_athlete(db, athlete, stats):
     record = db.get(AthleteStats, athlete["id"])
 
@@ -233,16 +245,26 @@ def stats_summary(request: Request):
     if not token:
         return {"error": "unauthorized"}
 
-    activities = get_activities(token, per_page=50)
     athlete = get_athlete(token)
 
-    if not activities:
+    db = SessionLocal()
+    cached = get_cached_athlete_stats(db, athlete["id"])
+
+    if cached:
+        db.close()
         return {
-            "total_activities": 0,
-            "total_kudos": 0,
-            "average_kudos": 0,
+            "total_activities": cached.total_activities,
+            "total_kudos": cached.total_kudos,
+            "average_kudos": cached.average_kudos,
             "top_activity_id": None
         }
+    
+    db.close()
+
+    activities = get_activities(token, per_page=50)
+    
+    if not activities:
+        raise HTTPException(status_code=503, detail="No activities returned from Strava")
 
     print("fetching real stats from DB") # testing
 
@@ -256,9 +278,10 @@ def stats_summary(request: Request):
     }
 
     # SAVE TO DATABASE
-    db = SessionLocal()
-    upsert_athlete(db, athlete, stats)
-    db.close()
+    if total_kudos > 0 or len(activities) > 0:
+        db = SessionLocal()
+        upsert_athlete(db, athlete, stats)
+        db.close()
 
     print("Stats payload:", stats) # testing
 
