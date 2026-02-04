@@ -14,18 +14,18 @@ load_dotenv()
 
 app = FastAPI()
 
+IS_PREVIEW = os.getenv("RENDER_SERVICE_TYPE") == "preview"
+
 app.add_middleware(
     SessionMiddleware,
     secret_key=os.getenv("SESSION_SECRET", "dev-secret"),
     same_site="lax",
-    https_only=True
+    https_only=not IS_PREVIEW   # secure only in production
 )
 
 Base.metadata.create_all(bind=engine)
 
 SESSION_TTL = timedelta(minutes=10)
-
-IS_PREVIEW = os.getenv("RENDER_SERVICE_TYPE") == "preview"
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
@@ -255,6 +255,7 @@ def dashboard(request: Request):
 
 @app.get("/api/athlete")
 def api_athlete(request: Request):
+    print("SESSION KEYS:", request.session.keys()) # testing
     token = request.session.get("access_token")
     if not token:
         return {"error": "unauthorized"}
@@ -269,6 +270,7 @@ def api_athlete(request: Request):
 
 @app.get("/api/stats/summary")
 def stats_summary(request: Request):
+    print("SESSION KEYS:", request.session.keys()) # testing
     if IS_PREVIEW:
         return {
             "total_activities": 0,
