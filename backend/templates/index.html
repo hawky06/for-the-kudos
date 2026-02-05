@@ -131,28 +131,33 @@
         <a href="/" class="d-flex align-items-center text-decoration-none">
             <img
                 src="/static/for-the-kudos-logo.png"
+                data-light="/static/for-the-kudos-logo-light.png"
+                data-dark="/static/for-the-kudos-logo-dark.png"
                 class="site-logo"
                 alt="For the Kudos"
-                style="height: 200px;"
+                style="height: 100px;"
             >
         </a>
 
-        <button
-            id="theme-toggle"
-            class="btn btn-outline-secondary"
-        >
-            🌙 Dark Mode
-        </button>
+        <div class=""d-flex align-items-center gap-2">
+            <button id="theme-toggle" class="btn btn-outline-secondary">
+                🌙 Dark Mode
+            </button>
 
-        <select id="unitToggle" class="form-select form-select-sm" style="width:120px">
-            <option value="km">km</option>
-            <option value="mi">miles</option>
-        </select>
+            <select id="unitToggle" class="form-select form-select-sm" style="width:120px">
+                <option value="km">km</option>
+                <option value="mi">miles</option>
+            </select>
+        </div>
 
     </header>
 
     <div class="container">
-        <h1>🏃‍♂️ For the Kudos 🏃‍♀️</h1>
+        <div class="d-flex align-items-center justify-content-center gap-3 mb-4">
+            <img src="/static/for-the-kudos-logo.png" height="64" class="site-logo">
+            <h1 class="m-0">For the Kudos</h1>
+        </div>
+
 
         {% if logged_in %}
             <div class="dashboard"> 
@@ -269,6 +274,9 @@
             <script>
                 // Leaderboard
                 function loadLeaderboard() {
+                    document.querySelector('option[value="kudos_per_km"]').innerText =
+                        getUnit() === "mi" ? "Kudos per mile" : "Kudos per km";
+
                     const sort = document.getElementById("sort").value;
 
                     fetch(`/api/leaderboard?sort=${sort}`)
@@ -292,7 +300,9 @@
                                 icon = "❤️";
                             }
                             else if (sort === "kudos_per_km") {
-                                value = a.kudos_per_km;
+                                value = getUnit() === "mi"
+                                    ? (a.kudos_per_km / 0.621371).toFixed(2)
+                                    : a.kudos_per_km;
                                 icon = "📏";
                             }
                             else if (sort === "kudos_per_min") {
@@ -346,34 +356,44 @@
     </div>
 
     <script>
+        // Theme toggle
         const toggle = document.getElementById("theme-toggle");
 
+        // Update logo on page load based on theme
+        function updateLogo(theme) {
+            const logo = document.querySelector(".site-logo");
+            logo.src = logo.dataset[theme];
+        }   
+
+        // Load saved theme from localStorage
         const saved = localStorage.getItem("theme");
         if (saved) {
             document.documentElement.setAttribute("data-theme", saved);
             toggle.textContent = saved === "dark" ? "☀️ Light Mode" : "🌙 Dark Mode";
+            updateLogo(saved);
         }
 
-        toggle.addEventListener("click", () => {
-            const current = document.documentElement.getAttribute("data-theme");
-            const next = current === "dark" ? "light" : "dark";
-
-            document.documentElement.setAttribute("data-theme", next);
-            localStorage.setItem("theme", next);
-
-            toggle.textContent = next === "dark" ? "☀️ Light Mode" : "🌙 Dark Mode";
-        });
-
+        // Unit toggle
         function getUnit() {
             return localStorage.getItem("unit") || "km";
             }
 
+        // Convert km to miles if needed
         function convertDistance(km) {
             return getUnit() === "mi"
                 ? km * 0.621371
                 : km;
             }
 
+
+        function formatDistance(valueKm) {
+            if (getUnit() === "mi") {
+                return (valueKm * 0.621371).toFixed(2) + " mi";
+            }
+            return valueKm.toFixed(2) + " km";
+        }
+
+        // Update distance display based on selected unit
         document.getElementById("unitToggle").addEventListener("change", e => {
             localStorage.setItem("unit", e.target.value);
             refreshStats();
