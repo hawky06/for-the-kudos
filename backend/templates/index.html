@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>For the Kudos</title>
@@ -126,6 +127,7 @@
     </style>
 
 </head>
+
 <body>
     <header class="d-flex align-items-center justify-content-between px-3 py-2">
         <a href="/" class="d-flex align-items-center text-decoration-none">
@@ -139,7 +141,7 @@
             >
         </a>
 
-        <div class=""d-flex align-items-center gap-2">
+        <div class="d-flex align-items-center gap-2">
             <button id="theme-toggle" class="btn btn-outline-secondary">
                 🌙 Dark Mode
             </button>
@@ -151,13 +153,6 @@
         </div>
 
     </header>
-
-    <div class="container">
-        <div class="d-flex align-items-center justify-content-center gap-3 mb-4">
-            <img src="/static/for-the-kudos-logo.png" height="64" class="site-logo">
-            <h1 class="m-0">For the Kudos</h1>
-        </div>
-
 
         {% if logged_in %}
             <div class="dashboard"> 
@@ -252,7 +247,7 @@
                     document.getElementById("activityName").innerText = activity.name;
                     document.getElementById("activityDate").innerText = "📅 " + activity.date;
                     document.getElementById("activityKudos").innerText = "❤️ " + activity.kudos + " kudos";
-                    document.getElementById("activityDistance").innerText = "📏 " + activity.distance_km + " km";
+                    document.getElementById("activityDistance").innerText = "📏 " + formatDistanceKm(activity.Distance_km);
 
                     if (activity.polyline) {
                         const coords = polyline.decode(activity.polyline);
@@ -274,53 +269,63 @@
             <script>
                 // Leaderboard
                 function loadLeaderboard() {
-                    document.querySelector('option[value="kudos_per_km"]').innerText =
-                        getUnit() === "mi" ? "Kudos per mile" : "Kudos per km";
+                    const unit = getUnit();
+
+                    // Update label
+                    const kudosLabel = document.querySelector(
+                        'option[value="kudos_per_km"]'
+                    );
+                    kudosLabel.innerText =
+                        unit === "mi" ? "Kudos per mile" : "Kudos per km";
 
                     const sort = document.getElementById("sort").value;
 
                     fetch(`/api/leaderboard?sort=${sort}`)
                         .then(r => r.json())
                         .then(data => {
-                        document.getElementById("leaderboard").innerHTML =
-                            data.map((a, index) => {
-                            let value;
-                            let icon;
+                            document.getElementById("leaderboard").innerHTML =
+                                data.map((a, index) => {
+                                    let value = "-";
+                                    let icon = "";
 
-                            if (sort === "total_activities") {
-                                value = a.total_activities;
-                                icon = "🏃";
-                            }
-                            else if (sort === "average_kudos") {
-                                value = a.average_kudos;
-                                icon = "💖";
-                            } 
-                            else if (sort === "total_kudos") {
-                                value = a.total_kudos;
-                                icon = "❤️";
-                            }
-                            else if (sort === "kudos_per_km") {
-                                value = getUnit() === "mi"
-                                    ? (a.kudos_per_km / 0.621371).toFixed(2)
-                                    : a.kudos_per_km;
-                                icon = "📏";
-                            }
-                            else if (sort === "kudos_per_min") {
-                                value = a.kudos_per_min;
-                                icon = "⏱️";
-                            }
+                                    if (sort === "total_activities") {
+                                        value = a.total_activities;
+                                        icon = "🏃";
+                                    }
+                                    else if (sort === "average_kudos") {
+                                        value = a.average_kudos;
+                                        icon = "💖";
+                                    }
+                                    else if (sort === "total_kudos") {
+                                        value = a.total_kudos;
+                                        icon = "❤️";
+                                    }
+                                    else if (sort === "kudos_per_km") {
+                                        value =
+                                            unit === "mi"
+                                                ? (a.kudos_per_km * 0.621371).toFixed(2)
+                                                : a.kudos_per_km.toFixed(2);
+                                        icon = "📏";
+                                    }
+                                    else if (sort === "kudos_per_min") {
+                                        value = a.kudos_per_min;
+                                        icon = "⏱️";
+                                    }
 
-                            return `
-                                <div class="card p-2 mb-2 d-flex flex-row align-items-center">
-                                    <span class="me-3 fw-bold" style="font-size: 1.2rem;">${index + 1}</span>
-                                    <img src="${a.profile}" width="40" class="rounded-circle me-2"/>
-                                    <strong>${a.name}</strong>
-                                    <span class="ms-auto">${icon} ${value}</span>
-                                </div>
-                            `;
-                            }).join("");
+                                    return `
+                                        <div class="card p-2 mb-2 d-flex flex-row align-items-center">
+                                            <span class="me-3 fw-bold">${index + 1}</span>
+                                            <img src="${a.profile}" width="40" class="rounded-circle me-2"/>
+                                            <strong>${a.name}</strong>
+                                            <span class="ms-auto">${icon} ${value}</span>
+                                        </div>
+                                    `;
+                                }).join("");
                         });
-                }
+                }   
+
+    document.getElementById("sort").addEventListener("change", loadLeaderboard);
+    loadLeaderboard();
 
                 document.getElementById("sort").addEventListener("change", loadLeaderboard);
                 loadLeaderboard();
@@ -373,32 +378,44 @@
             updateLogo(saved);
         }
 
-        // Unit toggle
+        const currentTheme = saved || "light";
+        document.documentElement.setAttribute("data-theme", currentTheme);
+        updateLogo(currentTheme);
+
+        toggle.addEventListener("click", () => {
+            const current = document.documentElement.getAttribute("data-theme");
+            const next = current === "dark" ? "light" : "dark";
+
+            document.documentElement.setAttribute("data-theme", next);
+            localStorage.setItem("theme", next);
+            toggle.textContent = next === "dark" ? "☀️ Light Mode" : "🌙 Dark Mode";
+            updateLogo(next);
+        });
+
         function getUnit() {
-            return localStorage.getItem("unit") || "km";
-            }
-
-        // Convert km to miles if needed
-        function convertDistance(km) {
-            return getUnit() === "mi"
-                ? km * 0.621371
-                : km;
-            }
-
-
-        function formatDistance(valueKm) {
-            if (getUnit() === "mi") {
-                return (valueKm * 0.621371).toFixed(2) + " mi";
-            }
-            return valueKm.toFixed(2) + " km";
+        return localStorage.getItem("unit") || "km";
         }
 
-        // Update distance display based on selected unit
-        document.getElementById("unitToggle").addEventListener("change", e => {
+        function kmToMiles(km) {
+            return km * 0.621371;
+        }
+
+        function formatDistanceKm(km) {
+            return getUnit() === "mi"
+                ? `${kmToMiles(km).toFixed(2)} mi`
+                : `${km.toFixed(2)} km`;
+        }
+
+
+        const unitToggle = document.getElementById("unitToggle");
+
+        // Set initial value
+        unitToggle.value = getUnit();
+
+        unitToggle.addEventListener("change", e => {
             localStorage.setItem("unit", e.target.value);
-            refreshStats();
             loadLeaderboard();
-            drawCharts();
+            location.reload(); // simplest safe way to update stats text
         });
 
     </script>
