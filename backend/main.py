@@ -175,9 +175,17 @@ def upsert_athlete(db, athlete, stats):
     record.firstname = athlete["firstname"]
     record.lastname = athlete["lastname"]
     record.profile = athlete["profile"]
+
     record.total_kudos = stats["total_kudos"]
     record.total_activities = stats["total_activities"]
+    record.total_distance_km = stats["total_distance_km"]
+    record.total_time_min = stats["total_time_min"]
+
     record.average_kudos = stats["average_kudos"]
+
+    record.kudos_per_km = stats["kudos_per_km"]
+    record.kudos_per_min = stats["kudos_per_min"]
+
     record.last_updated = datetime.utcnow()
 
     db.add(record)
@@ -323,10 +331,20 @@ def stats_summary(request: Request):
     total_kudos = sum(a.get("kudos_count", 0) for a in activities)
     top_activity = max(activities, key=lambda a: a.get("kudos_count", 0))
 
+    total_distance_km = sum(a.get("distance", 0) for a in activities) / 1000
+    total_time_min = sum(a.get("moving_time", 0) for a in activities) / 60
+
+    kudos_per_km = round(total_kudos / total_distance_km, 2) if total_distance_km else 0
+    kudos_per_min = round(total_kudos / total_time_min, 2) if total_time_min else 0
+
     stats = {
         "total_activities": len(activities),
         "total_kudos": total_kudos,
         "average_kudos": round(total_kudos / len(activities), 1),
+        "total_distance_km": round(total_distance_km, 1),
+        "total_time_min": round(total_time_min),
+        "kudos_per_km": kudos_per_km,
+        "kudos_per_min": kudos_per_min,
     }
 
     # SAVE TO DATABASE
@@ -339,6 +357,10 @@ def stats_summary(request: Request):
 
     return {
         **stats,
+        "total_distance_km": round(total_distance_km, 1),
+        "total_time_min": round(total_time_min),
+        "kudos_per_km": kudos_per_km,
+        "kudos_per_min": kudos_per_min,
         "top_activity_id": top_activity["id"]
     }
 
@@ -392,9 +414,11 @@ def leaderboard(
         ]
     
     valid_sorts = {
+        "total_activities": AthleteStats.total_activities,
         "total_kudos": AthleteStats.total_kudos,
         "average_kudos": AthleteStats.average_kudos,
-        "total_activities": AthleteStats.total_activities,
+        "kudos_per_km": AthleteStats.kudos_per_km,
+        "kudos_per_min": AthleteStats.kudos_per_min,
     }
 
     order_col = valid_sorts.get(sort, AthleteStats.total_kudos)

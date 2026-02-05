@@ -143,6 +143,12 @@
         >
             🌙 Dark Mode
         </button>
+
+        <select id="unitToggle" class="form-select form-select-sm" style="width:120px">
+            <option value="km">km</option>
+            <option value="mi">miles</option>
+        </select>
+
     </header>
 
     <div class="container">
@@ -193,9 +199,11 @@
                         <h3 class="mb-3">🏆 Leaderboard</h3>
 
                         <select id="sort" class="form-select mb-3">
+                            <option value="total_activities">Total Activities</option>
                             <option value="total_kudos">Total Kudos</option>
                             <option value="average_kudos">Average Kudos</option>
-                            <option value="total_activities">Total Activities</option>
+                            <option value="kudos_per_km">Kudos per km</option>
+                            <option value="kudos_per_min">Kudos per min</option>
                         </select>
 
                         <div id="leaderboard"></div>
@@ -205,114 +213,124 @@
 
             
             <script>
-            // Athlete profile (fast) 
-            fetch("/api/athlete")
-            .then(r => r.json())
-            .then(a => {
-                document.getElementById("athleteCard").style.display = "block";
-                document.getElementById("athleteAvatar").src = a.profile;
-                document.getElementById("athleteName").innerText = `${a.firstname} ${a.lastname}`;
-                document.getElementById("athleteLocation").innerText = `${a.city || ""} ${a.country || ""}`;
-            });
+                // Athlete profile (fast) 
+                fetch("/api/athlete")
+                .then(r => r.json())
+                .then(a => {
+                    document.getElementById("athleteCard").style.display = "block";
+                    document.getElementById("athleteAvatar").src = a.profile;
+                    document.getElementById("athleteName").innerText = `${a.firstname} ${a.lastname}`;
+                    document.getElementById("athleteLocation").innerText = `${a.city || ""} ${a.country || ""}`;
+                });
 
-            // Stats summary (fast)
-            fetch("/api/stats/summary")
-            .then(res => res.json())
-            .then(summary => {
-                document.getElementById("loading").style.display = "none";
-                document.getElementById("stats").style.display = "block";
+                // Stats summary (fast)
+                fetch("/api/stats/summary")
+                .then(res => res.json())
+                .then(summary => {
+                    document.getElementById("loading").style.display = "none";
+                    document.getElementById("stats").style.display = "block";
 
-                document.getElementById("totalActivities").innerText = summary.total_activities;
-                document.getElementById("totalKudos").innerText = summary.total_kudos;
-                document.getElementById("avgKudos").innerText = summary.average_kudos;
+                    document.getElementById("totalActivities").innerText = summary.total_activities;
+                    document.getElementById("totalKudos").innerText = summary.total_kudos;
+                    document.getElementById("avgKudos").innerText = summary.average_kudos;
 
-                if (!summary.top_activity_id) return;
+                    if (!summary.top_activity_id) return;
 
-                // load slow part after summary is shown
-                return fetch(`/api/stats/top-activity?id=${summary.top_activity_id}`);
-            })
+                    // load slow part after summary is shown
+                    return fetch(`/api/stats/top-activity?id=${summary.top_activity_id}`);
+                })
 
-            .then(r => r && r.json())
-            .then(activity => {
-                if (!activity) return;
+                .then(r => r && r.json())
+                .then(activity => {
+                    if (!activity) return;
 
-                document.getElementById("activityName").innerText = activity.name;
-                document.getElementById("activityDate").innerText = "📅 " + activity.date;
-                document.getElementById("activityKudos").innerText = "❤️ " + activity.kudos + " kudos";
-                document.getElementById("activityDistance").innerText = "📏 " + activity.distance_km + " km";
+                    document.getElementById("activityName").innerText = activity.name;
+                    document.getElementById("activityDate").innerText = "📅 " + activity.date;
+                    document.getElementById("activityKudos").innerText = "❤️ " + activity.kudos + " kudos";
+                    document.getElementById("activityDistance").innerText = "📏 " + activity.distance_km + " km";
 
-                if (activity.polyline) {
-                    const coords = polyline.decode(activity.polyline);
-                    const latlngs = coords.map(c => [c[0], c[1]]);
+                    if (activity.polyline) {
+                        const coords = polyline.decode(activity.polyline);
+                        const latlngs = coords.map(c => [c[0], c[1]]);
 
-                    const map = L.map('map');
-                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-                    const route = L.polyline(latlngs).addTo(map);
-                    map.fitBounds(route.getBounds());
-                }
-            })
+                        const map = L.map('map');
+                        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+                        const route = L.polyline(latlngs).addTo(map);
+                        map.fitBounds(route.getBounds());
+                    }
+                })
 
-            .catch(err => {
-                document.getElementById("loading").innerText = "Failed to load stats 😢";
-                console.error(err);
-            });
+                .catch(err => {
+                    document.getElementById("loading").innerText = "Failed to load stats 😢";
+                    console.error(err);
+                });
             </script>
 
             <script>
-            // Leaderboard
-            function loadLeaderboard() {
-                const sort = document.getElementById("sort").value;
+                // Leaderboard
+                function loadLeaderboard() {
+                    const sort = document.getElementById("sort").value;
 
-                fetch(`/api/leaderboard?sort=${sort}`)
+                    fetch(`/api/leaderboard?sort=${sort}`)
+                        .then(r => r.json())
+                        .then(data => {
+                        document.getElementById("leaderboard").innerHTML =
+                            data.map((a, index) => {
+                            let value;
+                            let icon;
+
+                            if (sort === "total_activities") {
+                                value = a.total_activities;
+                                icon = "🏃";
+                            }
+                            else if (sort === "average_kudos") {
+                                value = a.average_kudos;
+                                icon = "💖";
+                            } 
+                            else if (sort === "total_kudos") {
+                                value = a.total_kudos;
+                                icon = "❤️";
+                            }
+                            else if (sort === "kudos_per_km") {
+                                value = a.kudos_per_km;
+                                icon = "📏";
+                            }
+                            else if (sort === "kudos_per_min") {
+                                value = a.kudos_per_min;
+                                icon = "⏱️";
+                            }
+
+                            return `
+                                <div class="card p-2 mb-2 d-flex flex-row align-items-center">
+                                    <span class="me-3 fw-bold" style="font-size: 1.2rem;">${index + 1}</span>
+                                    <img src="${a.profile}" width="40" class="rounded-circle me-2"/>
+                                    <strong>${a.name}</strong>
+                                    <span class="ms-auto">${icon} ${value}</span>
+                                </div>
+                            `;
+                            }).join("");
+                        });
+                }
+
+                document.getElementById("sort").addEventListener("change", loadLeaderboard);
+                loadLeaderboard();
+
+                // Show user's rank if not in top 20
+                fetch("/api/leaderboard/rank")
                     .then(r => r.json())
-                    .then(data => {
-                    document.getElementById("leaderboard").innerHTML =
-                        data.map((a, index) => {
-                        let value;
-                        let icon;
+                    .then(rank => {
+                        if (!rank.rank) return;
 
-                        if (sort === "average_kudos") {
-                            value = a.average_kudos;
-                            icon = "💖";
-                        } else if (sort === "total_activities") {
-                            value = a.total_activities;
-                            icon = "🏃";
-                        } else {
-                            value = a.total_kudos;
-                            icon = "❤️";
+                        if (rank.rank > 20) {
+                            document.getElementById("leaderboard").innerHTML += `
+                                <div class="card p-2 mt-3 d-flex flex-row align-items-center bg-warning-subtle">
+                                    <span class="me-3 fw-bold">${rank.rank}</span>
+                                    <strong>You</strong>
+                                    <span class="ms-auto">⬇️ Your position</span>
+                                </div>
+                            `;
                         }
-
-                        return `
-                            <div class="card p-2 mb-2 d-flex flex-row align-items-center">
-                                <span class="me-3 fw-bold" style="font-size: 1.2rem;">${index + 1}</span>
-                                <img src="${a.profile}" width="40" class="rounded-circle me-2"/>
-                                <strong>${a.name}</strong>
-                                <span class="ms-auto">${icon} ${value}</span>
-                            </div>
-                        `;
-                        }).join("");
                     });
-            }
-
-            document.getElementById("sort").addEventListener("change", loadLeaderboard);
-            loadLeaderboard();
-
-            // Show user's rank if not in top 20
-            fetch("/api/leaderboard/rank")
-                .then(r => r.json())
-                .then(rank => {
-                    if (!rank.rank) return;
-
-                    if (rank.rank > 20) {
-                        document.getElementById("leaderboard").innerHTML += `
-                            <div class="card p-2 mt-3 d-flex flex-row align-items-center bg-warning-subtle">
-                                <span class="me-3 fw-bold">${rank.rank}</span>
-                                <strong>You</strong>
-                                <span class="ms-auto">⬇️ Your position</span>
-                            </div>
-                        `;
-                    }
-                });
             </script>
 
         {% elif IS_PREVIEW %}
@@ -345,6 +363,24 @@
 
             toggle.textContent = next === "dark" ? "☀️ Light Mode" : "🌙 Dark Mode";
         });
+
+        function getUnit() {
+            return localStorage.getItem("unit") || "km";
+            }
+
+        function convertDistance(km) {
+            return getUnit() === "mi"
+                ? km * 0.621371
+                : km;
+            }
+
+        document.getElementById("unitToggle").addEventListener("change", e => {
+            localStorage.setItem("unit", e.target.value);
+            refreshStats();
+            loadLeaderboard();
+            drawCharts();
+        });
+
     </script>
 
     <footer class="site-footer">

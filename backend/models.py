@@ -12,6 +12,12 @@ class AthleteStats(Base):
 
     total_kudos = Column(Integer)
     total_activities = Column(Integer)
+    total_distance_km = Column(Float)
+    total_time_min = Column(Float)
+
     average_kudos = Column(Float)
+
+    kudos_per_km = Column(Float)
+    kudos_per_min = Column(Float)
 
     last_updated = Column(DateTime, default=datetime.utcnow)
