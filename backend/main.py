@@ -28,6 +28,10 @@ app.add_middleware(
 
 Base.metadata.create_all(bind=engine)
 
+Base.metadata.drop_all(bind=engine)
+Base.metadata.create_all(bind=engine)
+
+
 SESSION_TTL = timedelta(minutes=10)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
