@@ -242,7 +242,7 @@
                     document.getElementById("activityName").innerText = activity.name;
                     document.getElementById("activityDate").innerText = "📅 " + activity.date;
                     document.getElementById("activityKudos").innerText = "❤️ " + activity.kudos + " kudos";
-                    document.getElementById("activityDistance").innerText = "📏 " + formatDistanceKm(activity.Distance_km);
+                    document.getElementById("activityDistance").innerText = "📏 " + formatDistanceKm(activity.distance_km);
 
                     if (activity.polyline) {
                         const coords = polyline.decode(activity.polyline);
@@ -318,9 +318,6 @@
                                 }).join("");
                         });
                 }   
-
-    document.getElementById("sort").addEventListener("change", loadLeaderboard);
-    loadLeaderboard();
 
                 document.getElementById("sort").addEventListener("change", loadLeaderboard);
                 loadLeaderboard();
