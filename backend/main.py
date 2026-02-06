@@ -165,6 +165,7 @@ def get_cached_athlete_stats(db, athlete_id):
             "total_activities": record.total_activities,
             "total_kudos": record.total_kudos,
             "average_kudos": record.average_kudos,
+            "kudos_per_min": record.kudos_per_min,
         }
     
     return None
@@ -298,7 +299,7 @@ def stats_summary(request: Request):
             "total_activities": 0,
             "total_kudos": 0,
             "average_kudos": 0,
-            "kodus_per_min": 0,
+            "kudos_per_min": 0,
             "top_activity_id": None
         }
 
@@ -446,6 +447,8 @@ def leaderboard(
             "total_kudos": r.total_kudos,
             "average_kudos": r.average_kudos,
             "total_activities": r.total_activities,
+            "kudos_per_km": r.kudos_per_km,
+            "kudos_per_min": r.kudos_per_min,
         }
         for r in rows
     ]
