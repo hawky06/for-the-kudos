@@ -298,6 +298,7 @@ def stats_summary(request: Request):
             "total_activities": 0,
             "total_kudos": 0,
             "average_kudos": 0,
+            "kodus_per_min": 0,
             "top_activity_id": None
         }
 
@@ -320,6 +321,7 @@ def stats_summary(request: Request):
             "total_activities": cached["total_activities"],
             "total_kudos": cached["total_kudos"],
             "average_kudos": cached["average_kudos"],
+            "kudos_per_min": cached["kudos_per_min"],
             "top_activity_id": None
         }
     

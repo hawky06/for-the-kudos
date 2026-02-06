@@ -177,6 +177,11 @@
                             <p class="display-5" id="avgKudos">-</p>
                         </div>
 
+                        <div class="card text-centre shadow">
+                            <h2>Kudos per Minute</h2>
+                            <p class="display-5" id="kudos_per_min">-</p>
+                        </div>
+
                         <div class="card text-center shadow">
                             <h2>Most Loved Activity</h2>
                             <p class="h4" id="activityName"></p>
@@ -228,6 +233,7 @@
                     document.getElementById("totalActivities").innerText = summary.total_activities;
                     document.getElementById("totalKudos").innerText = summary.total_kudos;
                     document.getElementById("avgKudos").innerText = summary.average_kudos;
+                    document.getElementById("kudos_per_min").innerText = summary.average_kudos;
 
                     if (!summary.top_activity_id) return;
 
@@ -407,7 +413,7 @@
         unitToggle.addEventListener("change", e => {
             localStorage.setItem("unit", e.target.value);
             loadLeaderboard();
-            location.reload(); // simplest safe way to update stats text
+            location.reload();
         });
 
     </script>
