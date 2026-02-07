@@ -228,6 +228,8 @@
                 });
 
                 // Stats summary (fast)
+                let map
+
                 fetch("/api/stats/summary")
                 .then(res => res.json())
                 .then(summary => {
@@ -258,10 +260,25 @@
                         const coords = polyline.decode(activity.polyline);
                         const latlngs = coords.map(c => [c[0], c[1]]);
 
-                        const map = L.map('map');
-                        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+                        // Clear old map if it exists
+                        if (map) {
+                            map.remove();
+                        }
+
+                        // Create map AFTER element is visible
+                        map = L.map('map');
+
+                        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                            attribution: '&copy; OpenStreetMap'
+                        }).addTo(map);
+
                         const route = L.polyline(latlngs).addTo(map);
                         map.fitBounds(route.getBounds());
+
+                        // Force Leaflet to recalc size
+                        setTimeout(() => {
+                            map.invalidateSize();
+                        }, 100);
                     }
                 })
 
