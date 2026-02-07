@@ -18,6 +18,6 @@ class AthleteStats(Base):
     average_kudos = Column(Float)
 
     kudos_per_km = Column(Float)
-    kudos_per_min = Column(Float)
+    min_per_kudos = Column(Float)
 
     last_updated = Column(DateTime, default=datetime.utcnow)

@@ -207,7 +207,7 @@
                             <option value="total_kudos">Total Kudos</option>
                             <option value="average_kudos">Average Kudos</option>
                             <option value="kudos_per_km">Kudos per km</option>
-                            <option value="kudos_per_min">Kudos per min</option>
+                            <option value="min_per_kudos">Min per kudos</option>
                         </select>
 
                         <div id="leaderboard"></div>
@@ -239,7 +239,7 @@
                     document.getElementById("totalActivities").innerText = summary.total_activities;
                     document.getElementById("totalKudos").innerText = summary.total_kudos;
                     document.getElementById("avgKudos").innerText = summary.average_kudos;
-                    document.getElementById("kudos_per_min").innerText = summary.kudos_per_min;
+                    document.getElementById("min_per_kudos").innerText = summary.min_per_kudos;
 
                     if (!summary.top_activity_id) return;
 
@@ -329,8 +329,8 @@
                                                 : a.kudos_per_km.toFixed(2);
                                         icon = "📏";
                                     }
-                                    else if (sort === "kudos_per_min") {
-                                        value = a.kudos_per_min;
+                                    else if (sort === "min_per_kudos") {
+                                        value = a.min_per_kudos;
                                         icon = "⏱️";
                                     }
 

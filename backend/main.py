@@ -165,7 +165,7 @@ def get_cached_athlete_stats(db, athlete_id):
             "total_activities": record.total_activities,
             "total_kudos": record.total_kudos,
             "average_kudos": record.average_kudos,
-            "kudos_per_min": record.kudos_per_min,
+            "min_per_kudos": record.min_per_kudos,
         }
     
     return None
@@ -189,7 +189,7 @@ def upsert_athlete(db, athlete, stats):
     record.average_kudos = stats["average_kudos"]
 
     record.kudos_per_km = stats["kudos_per_km"]
-    record.kudos_per_min = stats["kudos_per_min"]
+    record.min_per_kudos = stats["min_per_kudos"]
 
     record.last_updated = datetime.utcnow()
 
@@ -299,7 +299,7 @@ def stats_summary(request: Request):
             "total_activities": 0,
             "total_kudos": 0,
             "average_kudos": 0,
-            "kudos_per_min": 0,
+            "min_per_kudos": 0,
             "top_activity_id": None
         }
 
@@ -322,7 +322,7 @@ def stats_summary(request: Request):
             "total_activities": cached["total_activities"],
             "total_kudos": cached["total_kudos"],
             "average_kudos": cached["average_kudos"],
-            "kudos_per_min": cached["kudos_per_min"],
+            "min_per_kudos": cached["min_per_kudos"],
             "top_activity_id": None
         }
     
@@ -342,7 +342,7 @@ def stats_summary(request: Request):
     total_time_min = sum(a.get("moving_time", 0) for a in activities) / 60
 
     kudos_per_km = round(total_kudos / total_distance_km, 2) if total_distance_km else 0
-    kudos_per_min = round(total_kudos / total_time_min, 2) if total_time_min else 0
+    min_per_kudos = round(total_time_min / total_kudos, 2) if total_time_min else 0
 
     stats = {
         "total_activities": len(activities),
@@ -351,7 +351,7 @@ def stats_summary(request: Request):
         "total_distance_km": round(total_distance_km, 1),
         "total_time_min": round(total_time_min),
         "kudos_per_km": kudos_per_km,
-        "kudos_per_min": kudos_per_min,
+        "min_per_kudos": min_per_kudos,
     }
 
     # SAVE TO DATABASE
@@ -367,7 +367,7 @@ def stats_summary(request: Request):
         "total_distance_km": round(total_distance_km, 1),
         "total_time_min": round(total_time_min),
         "kudos_per_km": kudos_per_km,
-        "kudos_per_min": kudos_per_min,
+        "min_per_kudos": min_per_kudos,
         "top_activity_id": top_activity["id"]
     }
 
@@ -425,7 +425,7 @@ def leaderboard(
         "total_kudos": AthleteStats.total_kudos,
         "average_kudos": AthleteStats.average_kudos,
         "kudos_per_km": AthleteStats.kudos_per_km,
-        "kudos_per_min": AthleteStats.kudos_per_min,
+        "min_per_kudos": AthleteStats.min_per_kudos,
     }
 
     order_col = valid_sorts.get(sort, AthleteStats.total_kudos)
@@ -448,7 +448,7 @@ def leaderboard(
             "average_kudos": r.average_kudos,
             "total_activities": r.total_activities,
             "kudos_per_km": r.kudos_per_km,
-            "kudos_per_min": r.kudos_per_min,
+            "min_per_kudos": r.min_per_kudos,
         }
         for r in rows
     ]
