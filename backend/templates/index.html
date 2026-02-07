@@ -187,7 +187,7 @@
                         </div>
 
                         <div class="card text-center shadow">
-                            <h2>kudos_per_km</h2>
+                            <h2> id="kudosDistanceLabel">Kudos per km</h2>
                             <p class="display-5" id="kudos_per_km">-</p>
                         </div>
 
@@ -222,6 +222,22 @@
 
             
             <script>
+                function updateKudosPerDistance() {
+                    if (kudosPerKm === null) return;
+
+                    const unit = getUnit();
+                    const valueEl = document.getElementById("kudos_per_km");
+                    const labelEl = document.getElementById("kudosDistanceLabel");
+
+                    if (unit === "mi") {
+                        valueEl.innerText = (kudosPerKm / 0.621371).toFixed(2);
+                    }
+                    else {
+                        valueEl.innerText = kudosPerKm.toFixed(2);
+                        labelEl.innerText = "kudos per km";
+                    }
+                }
+
                 // Athlete profile (fast) 
                 fetch("/api/athlete")
                 .then(r => r.json())
@@ -234,6 +250,7 @@
 
                 // Stats summary (fast)
                 let map
+                let kudosPerKm = null;
 
                 fetch("/api/stats/summary")
                 .then(res => res.json())
@@ -245,6 +262,9 @@
                     document.getElementById("totalKudos").innerText = summary.total_kudos;
                     document.getElementById("avgKudos").innerText = summary.average_kudos;
                     document.getElementById("min_per_kudos").innerText = summary.min_per_kudos;
+
+                    kudosPerKm = summary.kudos_per_km;
+                    updateKudosPerDistance();
 
                     if (!summary.top_activity_id) return;
 
@@ -330,7 +350,7 @@
                                     else if (sort === "kudos_per_km") {
                                         value =
                                             unit === "mi"
-                                                ? (a.kudos_per_km * 0.621371).toFixed(2)
+                                                ? (a.kudos_per_km / 0.621371).toFixed(2)
                                                 : a.kudos_per_km.toFixed(2);
                                         icon = "📏";
                                     }
@@ -439,7 +459,6 @@
         unitToggle.addEventListener("change", e => {
             localStorage.setItem("unit", e.target.value);
             loadLeaderboard();
-            location.reload();
         });
 
     </script>
