@@ -231,7 +231,7 @@
                 }
 
 
-                function updateKudosPerDistance() {
+                function updateKudosPerDistance(stats) {
                     const label = document.getElementById("kudosDistanceLabel");
                     const valueEl = document.getElementById("kudosDistanceValue");
                     const unit = getUnit();
@@ -282,7 +282,7 @@
                     document.getElementById("min_per_kudos").innerText = summary.min_per_kudos;
 
                     kudosPerKm = summary.kudos_per_km;
-                    updateKudosPerDistance();
+                    updateKudosPerDistance(summary);
 
                     if (!summary.top_activity_id) return;
 
@@ -299,7 +299,7 @@
                     document.getElementById("activityKudos").innerText = "❤️ " + activity.kudos + " kudos";
                     document.getElementById("activityDistance").innerText = "📏 " + formatDistanceKm(activity.distance_km);
 
-                    if (activity.polyline) {
+                    if (activity.polyline && document.getElementById("map")) {
                         const coords = polyline.decode(activity.polyline);
                         const latlngs = coords.map(c => [c[0], c[1]]);
 
@@ -473,7 +473,7 @@
         unitToggle.addEventListener("change", e => {
             localStorage.setItem("unit", e.target.value);
             loadLeaderboard();
-            updateKudosPerDistance();
+            updateKudosPerDistance(currentStats);
         });
 
     </script>
