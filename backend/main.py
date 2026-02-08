@@ -325,6 +325,11 @@ def stats_summary(request: Request):
     db.close()
 
     activities = get_activities(token, per_page=50)
+
+    activities = [
+        a for a in activities
+        if a.get("type") == "Run"
+    ]
     
     if not activities:
         raise HTTPException(status_code=503, detail="No activities returned from Strava")
