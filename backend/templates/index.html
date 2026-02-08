@@ -191,8 +191,8 @@
                         </div>
 
                         <div class="card text-center shadow">
-                            <h2> id="kudosDistanceLabel">Kudos per km</h2>
-                            <p class="display-5" id="kudos_per_km">-</p>
+                            span id="kudosDistanceLabel">Kudos per km</div>span><br>
+                            <strong id="kudosDistanceValue">1.00</strong>
                         </div>
 
                         <div class="card text-center shadow">
@@ -230,15 +230,17 @@
                     if (kudosPerKm === null) return;
 
                     const unit = getUnit();
-                    const valueEl = document.getElementById("kudos_per_km");
-                    const labelEl = document.getElementById("kudosDistanceLabel");
+                    
+                    const label = document.getElementById("kudosDistanceLabel");
+                    const value = document.getElementById("kudosDistanceValue");
 
                     if (unit === "mi") {
-                        valueEl.innerText = (kudosPerKm / 0.621371).toFixed(2);
+                        label.textContent = "Kudos per mile"
+                        value.textContent = (kudosPerKm / 0.621371).toFixed(2);
                     }
                     else {
-                        valueEl.innerText = kudosPerKm.toFixed(2);
-                        labelEl.innerText = "kudos per km";
+                        label.textContent = "kudos per km";
+                        value.textContent = kudosPerKm.toFixed(2);
                     }
                 }
 
