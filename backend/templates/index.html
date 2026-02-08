@@ -15,6 +15,8 @@
     />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/@mapbox/polyline@1.1.1/src/polyline.js"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
         /* THEME VARIABLES */
@@ -97,6 +99,12 @@
             margin-bottom: 40px;
         }
 
+        .site-title {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
         .login-btn {
             display: block;
             margin: 50px auto;
@@ -142,6 +150,7 @@
                 alt="For the Kudos"
                 style="height: 100px;"
             >
+            <span class=""site-title">For the Kudos</span>
         </a>
 
         <div class="d-flex align-items-center gap-2">
@@ -222,6 +231,16 @@
                         <div id="leaderboard"></div>
                     </div>
                 </section>
+
+                <div class="card shadow p-3 mb-4">
+                    <h3 class="mb-3">Kudos vs Distance</h3>
+                    <canvas id="kudosDistanceChart"></canvas>
+                </div>
+
+                <div class="card shadow p-3">
+                    <h3 class="mb-3">Totoal Kudos Leaderboard</h3>
+                    <canvas id="kudosLeaderboardChart"></canvas>
+                </div>
             </div>  
 
             
@@ -396,6 +415,130 @@
                             `;
                         }
                     });
+
+                function chartColors() {
+                    const dark = document.documentElement.getAttribute("data-theme") === "dark";
+
+                    return {
+                        text: dark ? "#ffffff" : "#000000",
+                        grid: dark ? "#333333" : "#dddddd",
+                        accent: "#ff6a00"
+                    };
+                }
+
+                let kudosDistanceChart;
+
+                function renderKudosDistanceChart(data) {
+                    const colors = chartColors();
+                    const unit = getUnit();
+
+                    const points = data.map(a => ({
+                        x: unit === "mi" ? a.distance_km * 0.621371 : a.distance_km,
+                        y: a.total_kudos,
+                        label: a.name
+                    }));
+
+                    if (kudosDistanceChart) kudosDistanceChart.destroy();
+
+                    kudosDistanceChart = new Chart(
+                        document.getElementById("kudosDistanceChart"),
+                        {
+                            type: "scatter",
+                            data: {
+                                datasets: [{
+                                    label: "Athletes",
+                                    data: points,
+                                    backgroundColor: colors.accent
+                                }]
+                            },
+                            options: {
+                                plugins: {
+                                    tooltip: {
+                                        callbacks: {
+                                            label: ctx =>
+                                                `${ctx.raw.label}: ${ctx.raw.y} kudos`
+                                        }
+                                    },
+                                    legend: { display: false }
+                                },
+                                scales: {
+                                    x: {
+                                        title: {
+                                            display: true,
+                                            text: `Distance (${unit})`,
+                                            color: colors.text
+                                        },
+                                        ticks: { color: colors.text },
+                                        grid: { color: colors.grid },
+                                    },
+                                    y: {
+                                        title: {
+                                            display: true,
+                                            text: 'Total Kudos',
+                                            color: colors.text
+                                        },
+                                        ticks: { color: colors.text },
+                                        grid: { color: colors.grid },
+                                    }
+                                }
+                            }
+                        }
+                    );
+                }
+
+                let kudosLeaderboardChart;
+
+                function renderKudosLeaderboard(data) {
+                    const colors = chartColors();
+
+                    const names = data.map(a => a.name);
+                    const kudos = data.map(a => a.total_kudos);
+
+                    if (kudosLeaderboardChart) kudosLeaderboardChart.destroy();
+
+                    kudosLeaderboardChart = new Chart(
+                        document.getElementById("kudosLeaderboardChart"),
+                        {
+                            type: "bar",
+                            data: {
+                                label: names,
+                                datasets: [{
+                                    label: "Total Kudos",
+                                    data: kudos,
+                                    backgroundColor: colors.accent
+                                }]
+                            },
+                            options: {
+                                plugins: {
+                                    legend: { display: false}
+                                },
+                                scales: {
+                                    x: {
+                                        ticks: { color: colors.text },
+                                        grid: { display: false}
+                                    },
+                                    y: {
+                                        ticks: { color: colors.text },
+                                        grid: { color: colors.grid }
+                                    
+                                    }
+                                }
+                            }
+                        }
+                    );
+                }
+
+                function loadGraphs() {
+                    fetch("/api/leaderboard")
+                        .then(r => r.json())
+                        .then(data => {
+                            renderKudosDistanceChart(data);
+                            renderKudosLeaderboard(data);
+                        });
+                }
+
+                loadGraphs();
+
             </script>
 
         {% elif IS_PREVIEW %}
@@ -465,7 +608,10 @@
         unitToggle.addEventListener("change", e => {
             localStorage.setItem("unit", e.target.value);
             loadLeaderboard();
+            loadGraphs();
+            updateKudosPerDistance();
         });
+
 
     </script>
 
