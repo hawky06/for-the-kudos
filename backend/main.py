@@ -162,6 +162,7 @@ def get_cached_athlete_stats(db, athlete_id):
             "total_kudos": record.total_kudos,
             "average_kudos": record.average_kudos,
             "min_per_kudos": record.min_per_kudos,
+            "kudos_per_km": record.kudos_per_km,
         }
     
     return None
